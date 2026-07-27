@@ -1,6 +1,14 @@
 # TrackBucks
 
-A portfolio tracking web application with AI-powered email reports and disaster alerts.
+**TrackBucks: AI-Powered Behavioral Portfolio Management**
+
+TrackBucks is a full-stack web application designed for savings-oriented retail investors who experience stock market anxiety. Built with **FastAPI, MongoDB, and Jinja2**, the platform allows users to track domestic and international stocks alongside mutual funds with real-time financial data. 
+
+What sets TrackBucks apart is its deep integration with **Google's Gemini 3.5 Flash AI**. Instead of generic summaries, the AI is constrained by a highly structured, data-driven "National Institute of Statistics PhD Economist" persona. It provides:
+- **Daily Performance Updates**: Contextualizes daily volatility against historical norms and sector averages.
+- **Disaster Alerts**: Automatically triggers crisis-communication protocols during steep drops, using historical crash data to prevent panic selling.
+- **Behavioral Coaching**: Highlights psychological traps and reinforces long-term wealth creation principles.
+- **Scheduled Email Reports**: Delivers personalized, automated insights directly to the user's inbox via a custom APScheduler backend.
 
 ## Features
 
