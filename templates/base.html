@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrackBucks - {% block title %}{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <meta name="description" content="Track your stocks and mutual funds with AI-powered insights">
+</head>
+<body>
+    <nav class="main-nav">
+        <div class="nav-brand"><a href="/dashboard">💰 TrackBucks</a></div>
+        <div class="nav-links">
+            {% if user %}
+                <a href="/dashboard">Dashboard</a>
+                <a href="/settings">Settings</a>
+                <a href="/logout">Logout</a>
+            {% else %}
+                <a href="/login">Login</a>
+                <a href="/register">Register</a>
+            {% endif %}
+        </div>
+    </nav>
+    
+    {% if flash_message %}
+        <div class="flash flash-{{ flash_type }}">{{ flash_message }}</div>
+    {% endif %}
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <footer class="main-footer">
+        <p>TrackBucks &copy; 2026 &mdash; AI-powered portfolio tracking</p>
+    </footer>
+</body>
+</html>

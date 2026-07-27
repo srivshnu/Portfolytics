@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+<div class="settings-page">
+    <h1>Settings</h1>
+
+    <section class="card" style="margin-bottom: 1.5rem;">
+        <h2>📧 Email Report Schedule</h2>
+        <form method="POST" action="/update-schedule">
+            <div class="form-row">
+                <div class="form-group" style="flex: 1;">
+                    <label for="report_frequency">Frequency</label>
+                    <select id="report_frequency" name="report_frequency">
+                        <option value="daily" {% if user.settings.report_frequency == 'daily' %}selected{% endif %}>Daily</option>
+                        <option value="every_12h" {% if user.settings.report_frequency == 'every_12h' %}selected{% endif %}>Every 12 Hours</option>
+                        <option value="every_6h" {% if user.settings.report_frequency == 'every_6h' %}selected{% endif %}>Every 6 Hours</option>
+                        <option value="weekly" {% if user.settings.report_frequency == 'weekly' %}selected{% endif %}>Weekly</option>
+                    </select>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label for="report_time">Preferred Time (IST)</label>
+                    <input type="time" id="report_time" name="report_time" value="{{ user.settings.report_time }}">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Schedule</button>
+        </form>
+    </section>
+
+    <section class="card" style="margin-bottom: 1.5rem;">
+        <h2>⚠️ Disaster Alert Thresholds</h2>
+        <p class="text-secondary" style="margin-bottom: 1rem;">Get an immediate email alert when any tracked asset drops by this percentage or more.</p>
+        <form method="POST" action="/update-alerts">
+            <div class="form-row">
+                <div class="form-group" style="flex: 1;">
+                    <label for="disaster_threshold_stock">Stock Alert Threshold (%)</label>
+                    <input type="number" id="disaster_threshold_stock" name="disaster_threshold_stock" value="{{ user.settings.disaster_threshold_stock }}" step="0.5" min="0.5" max="50">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label for="disaster_threshold_mf">Mutual Fund Alert Threshold (%)</label>
+                    <input type="number" id="disaster_threshold_mf" name="disaster_threshold_mf" value="{{ user.settings.disaster_threshold_mf }}" step="0.5" min="0.5" max="50">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Thresholds</button>
+        </form>
+    </section>
+
+    <section class="card">
+        <h2>👤 Account</h2>
+        <div class="account-info">
+            <p><strong>Name:</strong> {{ user.name }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+        </div>
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Add Stock{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <h1>Add Stock to Watchlist</h1>
+    <div class="card">
+        <form method="POST" action="/add-stock">
+            <div class="form-group">
+                <label for="ticker">Stock Ticker Symbol</label>
+                <input type="text" id="ticker" name="ticker" value="{{ query if query else '' }}" required placeholder="e.g. RELIANCE.NS, TCS.NS, AAPL">
+            </div>
+            <button type="submit" class="btn btn-primary">Add Stock</button>
+            <a href="/dashboard" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+
+    {% if results %}
+        <div class="card" style="margin-top: 1.5rem;">
+            <h2>Did you mean?</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ticker</th>
+                            <th>Company Name</th>
+                            <th>Exchange</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stock in results %}
+                            <tr>
+                                <td>{{ stock.ticker }}</td>
+                                <td>{{ stock.name }}</td>
+                                <td>{{ stock.exchange }}</td>
+                                <td>
+                                    <form method="POST" action="/add-stock" style="display:inline;">
+                                        <input type="hidden" name="ticker" value="{{ stock.ticker }}">
+                                        <button type="submit" class="btn btn-small btn-primary">Add</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% elif query %}
+        <div class="empty-state" style="margin-top: 1.5rem;">
+            <p>No suggestions found for "{{ query }}".</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

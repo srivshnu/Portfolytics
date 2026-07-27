@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Add Mutual Fund{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <h1>Add Mutual Fund</h1>
+    <div class="card">
+        <form method="GET" action="/add-mf">
+            <div class="form-group">
+                <label for="q">Search by Fund Name</label>
+                <input type="text" id="q" name="q" value="{{ query }}" placeholder="e.g. Axis Bluechip, SBI Small Cap">
+            </div>
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+    </div>
+
+    {% if results %}
+        <div class="card" style="margin-top: 1.5rem;">
+            <h2>Search Results</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Scheme Code</th>
+                            <th>Fund Name</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fund in results %}
+                            <tr>
+                                <td>{{ fund.scheme_code }}</td>
+                                <td>{{ fund.scheme_name }}</td>
+                                <td>
+                                    <form method="POST" action="/add-mf" style="display:inline;">
+                                        <input type="hidden" name="scheme_code" value="{{ fund.scheme_code }}">
+                                        <input type="hidden" name="scheme_name" value="{{ fund.scheme_name }}">
+                                        <button type="submit" class="btn btn-small btn-primary">Add</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% elif query %}
+        <div class="empty-state" style="margin-top: 1.5rem;">
+            <p>No funds found for "{{ query }}". Try a different search term.</p>
+        </div>
+    {% endif %}
+
+    <div style="margin-top: 1rem;">
+        <a href="/dashboard" class="btn btn-secondary" style="display: inline-block; text-align: center;">Back to Dashboard</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}{% if asset %}{{ asset.name }}{% else %}Asset Detail{% endif %}{% endblock %}
+
+{% block content %}
+<div class="asset-detail">
+    <a href="/dashboard" class="back-link">&larr; Back to Dashboard</a>
+
+    {% if asset %}
+    <h1>{{ asset.name }}</h1>
+    <span class="badge badge-{{ asset.asset_type }}">{{ asset.asset_type|upper }}</span>
+
+    <div class="metric-cards">
+        <div class="metric-card">
+            <span class="metric-label">Current {% if asset.asset_type == 'stock' %}Price{% else %}NAV{% endif %}</span>
+            <span class="metric-value">{{ asset.current_price | currency_fmt(asset.currency) }}</span>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Previous</span>
+            <span class="metric-value">{{ asset.previous_price | currency_fmt(asset.currency) }}</span>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Day Change</span>
+            <span class="metric-value {% if asset.change_pct >= 0 %}text-success{% else %}text-danger{% endif %}">{{ "%.2f"|format(asset.change_pct) }}%</span>
+        </div>
+    </div>
+
+    {% if ai_analysis %}
+    <section class="section">
+        <h2>🤖 AI Analysis</h2>
+        <div class="card ai-card">
+            <p>{{ ai_analysis }}</p>
+        </div>
+    </section>
+    {% endif %}
+
+    {% if history %}
+    <section class="section">
+        <h2>📊 Recent Price History</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Price</th>
+                        <th>Change %</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in history %}
+                        <tr>
+                            <td>{{ entry.recorded_at.strftime('%d %b %Y, %H:%M') }}</td>
+                            <td>{{ entry.price | currency_fmt(asset.currency) }}</td>
+                            <td class="{% if entry.change_pct >= 0 %}text-success{% else %}text-danger{% endif %}">{{ "%.2f"|format(entry.change_pct) }}%</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state" style="margin-top: 2rem;">
+        <p>Could not load asset data. The ticker or scheme code may be invalid, or the data source is temporarily unavailable.</p>
+        <p style="margin-top: 1rem;"><a href="/dashboard" class="btn btn-primary">Return to Dashboard</a></p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
