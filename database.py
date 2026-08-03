@@ -7,7 +7,7 @@ db = None
 
 async def connect_db():
     global client, db
-    client = AsyncIOMotorClient(settings.MONGO_URI)
+    client = AsyncIOMotorClient(settings.MONGODB_URI)
     db = client[settings.MONGO_DB]
     # Ping to verify connection
     await client.admin.command("ping")

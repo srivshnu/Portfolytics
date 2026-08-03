@@ -3,7 +3,7 @@ from functools import lru_cache
 
 
 class Settings(BaseSettings):
-    MONGO_URI: str = "mongodb://localhost:27017"
+    MONGODB_URI: str = "mongodb://localhost:27017"
     MONGO_DB: str = "trackbucks"
     SECRET_KEY: str = "change-me-to-a-long-random-string"
     GEMINI_API_KEY: str = ""
