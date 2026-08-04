@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     DISASTER_THRESHOLD_MF: float = 3.0
     POLL_INTERVAL_MINUTES: int = 15
 
-    model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
+    model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 
 
 @lru_cache
