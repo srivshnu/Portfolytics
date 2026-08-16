@@ -26,10 +26,10 @@ async def analyze_asset(asset_data: dict) -> str:
         
         if is_alert:
             prompt_config = SYSTEM_PROMPTS.get("disaster_alert_prompt", {})
-            prompt = f"SYSTEM INSTRUCTIONS:\n{json.dumps(prompt_config, indent=2)}\n\nUSER REQUEST: URGENT: {name} has dropped {change_pct}% today. Analyze why this might have happened, whether it's likely temporary or structural, and what the investor should watch for."
+            prompt = f"SYSTEM INSTRUCTIONS:\n{json.dumps(prompt_config, indent=2)}\n\nUSER REQUEST: URGENT: {name} has dropped {change_pct}% today. Explain the global or local events causing this drop. Assess if this is a hype bubble bursting. Suggest safer alternatives in a similar price bracket. Keep the investor calm but be honest."
         else:
             prompt_config = SYSTEM_PROMPTS.get("daily_update_prompt", {})
-            prompt = f"SYSTEM INSTRUCTIONS:\n{json.dumps(prompt_config, indent=2)}\n\nUSER REQUEST: Analyze the performance of {name} ({asset_type}). Current: {current_price}, Previous: {previous_price}, Change: {change_pct}%. Explain the likely reasons for this movement, compare to recent market conditions, and provide a brief outlook."
+            prompt = f"SYSTEM INSTRUCTIONS:\n{json.dumps(prompt_config, indent=2)}\n\nUSER REQUEST: Analyze the performance of {name} ({asset_type}). Current: {current_price}, Previous: {previous_price}, Change: {change_pct}%. Connect this performance to specific global/local events. Warn if the stock is hype-driven, and suggest alternative solid investments in a similar price range."
             
         response = await client.aio.models.generate_content(model='gemini-3.5-flash', contents=prompt)
         return response.text
@@ -48,7 +48,7 @@ async def generate_portfolio_report(assets: list) -> str:
             formatted_assets += f"- {a.get('name')} ({a.get('asset_type')}): {a.get('current_price')} (Change: {a.get('change_pct')}%)\n"
             
         prompt_config = SYSTEM_PROMPTS.get("portfolio_report_prompt", {})
-        prompt = f"SYSTEM INSTRUCTIONS:\n{json.dumps(prompt_config, indent=2)}\n\nUSER REQUEST: Here is a portfolio summary:\n{formatted_assets}\nProvide a brief portfolio health assessment. Highlight best and worst performers, overall trend, and any concerns."
+        prompt = f"SYSTEM INSTRUCTIONS:\n{json.dumps(prompt_config, indent=2)}\n\nUSER REQUEST: Here is a portfolio summary:\n{formatted_assets}\nAssess the portfolio health. Highlight how recent global/local events impacted the winners and losers. Warn against any hype-inflated assets held, and suggest historically stable alternatives matching the portfolio's value level."
         
         response = await client.aio.models.generate_content(model='gemini-3.5-flash', contents=prompt)
         return response.text
