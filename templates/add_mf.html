@@ -4,20 +4,21 @@
 
 {% block content %}
 <div class="form-page">
-    <h1>Add Mutual Fund</h1>
+    <h1>Add Mutual Fund to Watchlist</h1>
     <div class="card">
-        <form method="GET" action="/add-mf">
+        <form method="POST" action="/add-mf">
             <div class="form-group">
-                <label for="q">Search by Fund Name</label>
-                <input type="text" id="q" name="q" value="{{ query }}" placeholder="e.g. Axis Bluechip, SBI Small Cap">
+                <label for="fund_input">Search by Fund Name or Scheme Code</label>
+                <input type="text" id="fund_input" name="fund_input" value="{{ query if query else '' }}" required placeholder="e.g. Axis Bluechip, SBI Small Cap, 120503">
             </div>
-            <button type="submit" class="btn btn-primary">Search</button>
+            <button type="submit" class="btn btn-primary">Search / Add</button>
+            <a href="/dashboard" class="btn btn-secondary">Cancel</a>
         </form>
     </div>
 
     {% if results %}
         <div class="card" style="margin-top: 1.5rem;">
-            <h2>Search Results</h2>
+            <h2>Did you mean?</h2>
             <div class="table-container">
                 <table>
                     <thead>
@@ -33,7 +34,7 @@
                                 <td>{{ fund.scheme_code }}</td>
                                 <td>{{ fund.scheme_name }}</td>
                                 <td>
-                                    <form method="POST" action="/add-mf" style="display:inline;">
+                                    <form method="POST" action="/add-mf-confirm" style="display:inline;">
                                         <input type="hidden" name="scheme_code" value="{{ fund.scheme_code }}">
                                         <input type="hidden" name="scheme_name" value="{{ fund.scheme_name }}">
                                         <button type="submit" class="btn btn-small btn-primary">Add</button>
@@ -50,9 +51,5 @@
             <p>No funds found for "{{ query }}". Try a different search term.</p>
         </div>
     {% endif %}
-
-    <div style="margin-top: 1rem;">
-        <a href="/dashboard" class="btn btn-secondary" style="display: inline-block; text-align: center;">Back to Dashboard</a>
-    </div>
 </div>
 {% endblock %}
