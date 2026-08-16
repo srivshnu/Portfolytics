@@ -1,5 +1,6 @@
 import json
 import os
+import asyncio
 from google import genai
 from google.genai import types
 from pydantic import BaseModel, Field
@@ -12,7 +13,37 @@ try:
 except Exception:
     SYSTEM_PROMPTS = {}
 
-# Define exact, strict schemas for the AI to follow
+# Model priority list — tries each in order if the previous is overloaded
+GEMINI_MODELS = [
+    "gemini-3.7-flash",    # Latest & fastest
+    "gemini-3.5-flash",    # Stable fallback
+    "gemini-3.1-flash-lite",  # Lightweight last resort
+]
+
+async def _generate(client, system_instruction: str, user_msg: str, schema) -> str:
+    """Try models in order; fall back on 503/429 overload errors."""
+    last_err = None
+    for model in GEMINI_MODELS:
+        try:
+            response = await client.aio.models.generate_content(
+                model=model,
+                contents=user_msg,
+                config=types.GenerateContentConfig(
+                    system_instruction=system_instruction,
+                    response_mime_type="application/json",
+                    response_schema=schema,
+                ),
+            )
+            return response.text
+        except Exception as e:
+            err_str = str(e)
+            if "503" in err_str or "429" in err_str or "UNAVAILABLE" in err_str or "RESOURCE_EXHAUSTED" in err_str:
+                last_err = e
+                await asyncio.sleep(1)  # brief pause before retrying next model
+                continue
+            raise  # Any other error (404, auth, etc.) — raise immediately
+    raise last_err  # All models failed
+
 class DailyUpdateResponse(BaseModel):
     market_analysis: str = Field(description="2-3 sentences explaining today's movement simply and honestly")
     event_reasoning: str = Field(description="Clear explanation of the global or local events causing this change")
@@ -70,18 +101,8 @@ async def analyze_asset(asset_data: dict) -> str:
             
         sys_instruction = f"SYSTEM INSTRUCTIONS:\n{json.dumps(prompt_config, indent=2)}\n{json.dumps(SYSTEM_PROMPTS.get('key_principles', {}))}"
 
-        response = await client.aio.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=user_msg,
-            config=types.GenerateContentConfig(
-                system_instruction=sys_instruction,
-                response_mime_type="application/json",
-                response_schema=schema,
-            ),
-        )
-        
-        # Parse the JSON and assemble into a conversational markdown block
-        data = json.loads(response.text)
+        raw = await _generate(client, sys_instruction, user_msg, schema)
+        data = json.loads(raw)
         
         if is_alert:
             formatted = f"**Severity:** {data.get('severity_rating')}\n\n{data.get('situation_assessment')}\n\n"
@@ -116,17 +137,8 @@ async def generate_portfolio_report(assets: list) -> str:
         
         sys_instruction = f"SYSTEM INSTRUCTIONS:\n{json.dumps(prompt_config, indent=2)}\n{json.dumps(SYSTEM_PROMPTS.get('key_principles', {}))}"
 
-        response = await client.aio.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=user_msg,
-            config=types.GenerateContentConfig(
-                system_instruction=sys_instruction,
-                response_mime_type="application/json",
-                response_schema=PortfolioReportResponse,
-            ),
-        )
-        
-        data = json.loads(response.text)
+        raw = await _generate(client, sys_instruction, user_msg, PortfolioReportResponse)
+        data = json.loads(raw)
         
         formatted = f"### Executive Summary\n{data.get('executive_summary')}\n\n"
         formatted += f"### Market & Event Context\n{data.get('market_and_event_context')}\n\n"
