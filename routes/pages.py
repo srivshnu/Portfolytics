@@ -254,10 +254,35 @@ async def settings_page(request: Request):
     user = await require_auth(request)
     flash_message, flash_type = get_flash(request)
     
+    import pytz
+    all_timezones = sorted(pytz.all_timezones)
+    
+    # Group timezones by region for better UX
+    common_timezones = [
+        "Asia/Kolkata",
+        "Asia/Dubai",
+        "Asia/Singapore",
+        "Asia/Tokyo",
+        "Asia/Shanghai",
+        "Europe/London",
+        "Europe/Paris",
+        "Europe/Berlin",
+        "America/New_York",
+        "America/Chicago",
+        "America/Los_Angeles",
+        "America/Sao_Paulo",
+        "Australia/Sydney",
+        "Pacific/Auckland",
+        "UTC",
+    ]
+    
     response = templates.TemplateResponse(request, "settings.html", {
         "user": user,
         "flash_message": flash_message,
-        "flash_type": flash_type
+        "flash_type": flash_type,
+        "all_timezones": all_timezones,
+        "common_timezones": common_timezones,
+        "user_timezone": user.get("settings", {}).get("timezone", "Asia/Kolkata")
     })
     clear_flash(response)
     return response

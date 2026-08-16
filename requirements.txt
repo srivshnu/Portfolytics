@@ -8,7 +8,9 @@ jinja2
 httpx
 yfinance
 google-genai
-bcrypt
+passlib[bcrypt]
 apscheduler
 itsdangerous
 python-multipart
+pytz
+markdown

@@ -16,15 +16,35 @@
                         <option value="daily" {% if user.settings.report_frequency == 'daily' %}selected{% endif %}>Daily</option>
                         <option value="every_12h" {% if user.settings.report_frequency == 'every_12h' %}selected{% endif %}>Every 12 Hours</option>
                         <option value="every_6h" {% if user.settings.report_frequency == 'every_6h' %}selected{% endif %}>Every 6 Hours</option>
-                        <option value="weekly" {% if user.settings.report_frequency == 'weekly' %}selected{% endif %}>Weekly</option>
+                        <option value="weekly" {% if user.settings.report_frequency == 'weekly' %}selected{% endif %}>Weekly (Mondays)</option>
                     </select>
                 </div>
                 <div class="form-group" style="flex: 1;">
-                    <label for="report_time">Preferred Time (IST)</label>
-                    <input type="time" id="report_time" name="report_time" value="{{ user.settings.report_time }}">
+                    <label for="report_time">Preferred Time</label>
+                    <input type="time" id="report_time" name="report_time" value="{{ user.settings.report_time if user.settings.report_time else '18:00' }}">
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary">Save Schedule</button>
+            <div class="form-group" style="margin-top: 1rem;">
+                <label for="timezone">Your Time Zone</label>
+                <select id="timezone" name="timezone" style="width: 100%;">
+                    <optgroup label="─── Popular Time Zones ───">
+                        {% for tz in common_timezones %}
+                            <option value="{{ tz }}" {% if tz == user_timezone %}selected{% endif %}>{{ tz }}</option>
+                        {% endfor %}
+                    </optgroup>
+                    <optgroup label="─── All Time Zones ───">
+                        {% for tz in all_timezones %}
+                            {% if tz not in common_timezones %}
+                                <option value="{{ tz }}" {% if tz == user_timezone %}selected{% endif %}>{{ tz }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </optgroup>
+                </select>
+                <small style="color: var(--text-secondary); margin-top: 0.3rem; display: block;">
+                    Your report will be sent at the chosen time in this timezone. Default: Asia/Kolkata (IST).
+                </small>
+            </div>
+            <button type="submit" class="btn btn-primary" style="margin-top: 0.5rem;">Save Schedule</button>
         </form>
     </section>
 

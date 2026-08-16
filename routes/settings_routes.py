@@ -3,15 +3,19 @@ from fastapi.responses import RedirectResponse
 from auth import require_auth, set_flash
 from database import get_db
 import re
+import pytz
 from services.scheduler_service import reschedule_user_report
 
 router = APIRouter()
+
+VALID_TIMEZONES = sorted(pytz.all_timezones)
 
 @router.post("/update-schedule")
 async def update_schedule(
     request: Request, 
     report_frequency: str = Form(...), 
-    report_time: str = Form(...)
+    report_time: str = Form(...),
+    timezone: str = Form("Asia/Kolkata")
 ):
     user = await require_auth(request)
     
@@ -25,18 +29,24 @@ async def update_schedule(
         response = RedirectResponse(url="/settings", status_code=303)
         set_flash(response, "Invalid time format. Use HH:MM", "error")
         return response
+
+    if timezone not in pytz.all_timezones:
+        response = RedirectResponse(url="/settings", status_code=303)
+        set_flash(response, "Invalid timezone selected", "error")
+        return response
         
     db = get_db()
     await db.users.update_one(
         {"_id": user["_id"]},
         {"$set": {
             "settings.report_frequency": report_frequency,
-            "settings.report_time": report_time
+            "settings.report_time": report_time,
+            "settings.timezone": timezone
         }}
     )
     
     try:
-        await reschedule_user_report(str(user["_id"]), report_frequency, report_time)
+        await reschedule_user_report(str(user["_id"]), report_frequency, report_time, timezone)
     except Exception as e:
         print(f"Failed to reschedule: {e}")
         

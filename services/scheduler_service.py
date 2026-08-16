@@ -193,7 +193,7 @@ async def send_scheduled_report(user_id: str):
     except Exception as e:
         print(f"Error in send_scheduled_report for user {user_id}: {e}")
 
-async def reschedule_user_report(user_id: str, frequency: str, report_time: str):
+async def reschedule_user_report(user_id: str, frequency: str, report_time: str, timezone: str = "Asia/Kolkata"):
     global scheduler
     if not scheduler:
         return
@@ -208,15 +208,22 @@ async def reschedule_user_report(user_id: str, frequency: str, report_time: str)
         hour, minute = map(int, report_time.split(':'))
     except ValueError:
         hour, minute = 18, 0
+
+    # Validate and default timezone
+    import pytz
+    try:
+        tz = pytz.timezone(timezone)
+    except pytz.exceptions.UnknownTimeZoneError:
+        tz = pytz.timezone("Asia/Kolkata")
         
     if frequency == 'daily':
-        trigger = CronTrigger(hour=hour, minute=minute)
+        trigger = CronTrigger(hour=hour, minute=minute, timezone=tz)
     elif frequency == 'every_12h':
-        trigger = IntervalTrigger(hours=12)
+        trigger = IntervalTrigger(hours=12, timezone=tz)
     elif frequency == 'every_6h':
-        trigger = IntervalTrigger(hours=6)
+        trigger = IntervalTrigger(hours=6, timezone=tz)
     elif frequency == 'weekly':
-        trigger = CronTrigger(day_of_week='mon', hour=hour, minute=minute)
+        trigger = CronTrigger(day_of_week='mon', hour=hour, minute=minute, timezone=tz)
     else:
         return
         
@@ -230,8 +237,9 @@ async def load_all_user_schedules():
             settings_obj = user.get("settings", {})
             frequency = settings_obj.get("report_frequency")
             report_time = settings_obj.get("report_time", "18:00")
+            timezone = settings_obj.get("timezone", "Asia/Kolkata")
             if frequency:
-                await reschedule_user_report(str(user["_id"]), frequency, report_time)
+                await reschedule_user_report(str(user["_id"]), frequency, report_time, timezone)
     except Exception as e:
         print(f"Error loading schedules: {e}")
 
