@@ -60,14 +60,20 @@ async def add_mf(request: Request, fund_input: str = Form(...)):
         set_flash(response, "Please enter a fund name or scheme code.", "error")
         return response
 
-    # First: try treating the input as a direct scheme code
+    # --- Path A: Numeric input → treat as direct scheme code ---
     if fund_input.isdigit():
+        nav_data = None
         try:
             nav_data = await get_mf_nav(fund_input)
-            if nav_data:
-                # Valid code — proceed to add directly
-                scheme_code = fund_input
-                scheme_name = nav_data.get("scheme_name", fund_input)
+        except Exception as e:
+            response = RedirectResponse(url="/add-mf", status_code=303)
+            set_flash(response, f"Scheme code '{fund_input}' not found. Please search by fund name instead.", "error")
+            return response
+
+        if nav_data:
+            scheme_code = fund_input
+            scheme_name = nav_data.get("scheme_name", fund_input)
+            try:
                 db = get_db()
                 watchlist = await db.watchlists.find_one({"user_id": str(user["_id"])})
                 if watchlist:
@@ -86,12 +92,14 @@ async def add_mf(request: Request, fund_input: str = Form(...)):
                     upsert=True
                 )
                 response = RedirectResponse(url="/dashboard", status_code=303)
-                set_flash(response, f"Successfully added {scheme_name}.", "success")
+                set_flash(response, f"✅ Successfully added {scheme_name}.", "success")
                 return response
-        except Exception:
-            pass  # Fall through to search
+            except Exception as db_err:
+                response = RedirectResponse(url="/add-mf", status_code=303)
+                set_flash(response, f"Database error while saving: {str(db_err)}", "error")
+                return response
 
-    # Second: treat input as a name — redirect to GET /add-mf?q=... for "Did you mean?"
+    # --- Path B: Text input → search by name and show "Did you mean?" ---
     from urllib.parse import quote
     response = RedirectResponse(url=f"/add-mf?q={quote(fund_input)}", status_code=303)
     return response
