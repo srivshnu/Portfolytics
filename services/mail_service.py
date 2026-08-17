@@ -1,34 +1,67 @@
 import smtplib
 import asyncio
+import httpx
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from datetime import datetime
 from config import settings
 
+
 async def send_email(to_email: str, subject: str, html_body: str) -> bool:
-    if not settings.SMTP_EMAIL or not settings.SMTP_PASSWORD:
-        print("Warning: SMTP_EMAIL or SMTP_PASSWORD is not set.")
-        return False
-        
-    def _send():
+    """Send email via Resend API (cloud) or SMTP (local fallback)."""
+
+    # --- Mode 1: Resend API (HTTP-based, works on Render free tier) ---
+    if settings.RESEND_API_KEY:
         try:
-            msg = MIMEMultipart()
-            msg['From'] = settings.SMTP_EMAIL
-            msg['To'] = to_email
-            msg['Subject'] = subject
-            
-            msg.attach(MIMEText(html_body, 'html'))
-            
-            with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
-                server.starttls()
-                server.login(settings.SMTP_EMAIL, settings.SMTP_PASSWORD)
-                server.send_message(msg)
-            return True
+            async with httpx.AsyncClient(timeout=15) as client:
+                response = await client.post(
+                    "https://api.resend.com/emails",
+                    headers={
+                        "Authorization": f"Bearer {settings.RESEND_API_KEY}",
+                        "Content-Type": "application/json",
+                    },
+                    json={
+                        "from": f"TrackBucks <onboarding@resend.dev>",
+                        "to": [to_email],
+                        "subject": subject,
+                        "html": html_body,
+                    },
+                )
+                if response.status_code in (200, 201):
+                    print(f"[TrackBucks] Email sent via Resend to {to_email}")
+                    return True
+                else:
+                    print(f"[TrackBucks] Resend error: {response.status_code} {response.text}")
+                    return False
         except Exception as e:
-            print(f"Error sending email: {e}")
+            print(f"[TrackBucks] Resend failed: {e}")
             return False
-            
-    return await asyncio.to_thread(_send)
+
+    # --- Mode 2: Gmail SMTP (works locally, blocked on Render free tier) ---
+    if settings.SMTP_EMAIL and settings.SMTP_PASSWORD:
+        def _send():
+            try:
+                msg = MIMEMultipart()
+                msg['From'] = settings.SMTP_EMAIL
+                msg['To'] = to_email
+                msg['Subject'] = subject
+                msg.attach(MIMEText(html_body, 'html'))
+
+                with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
+                    server.starttls()
+                    server.login(settings.SMTP_EMAIL, settings.SMTP_PASSWORD)
+                    server.send_message(msg)
+                print(f"[TrackBucks] Email sent via SMTP to {to_email}")
+                return True
+            except Exception as e:
+                print(f"[TrackBucks] SMTP error: {e}")
+                return False
+
+        return await asyncio.to_thread(_send)
+
+    print("[TrackBucks] Warning: No email provider configured (set RESEND_API_KEY or SMTP_EMAIL).")
+    return False
+
 
 def build_report_html(user_name: str, assets_data: list, ai_report: str) -> str:
     rows = ""
