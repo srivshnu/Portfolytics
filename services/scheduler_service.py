@@ -108,6 +108,7 @@ async def disaster_monitor():
                                     asset_type=asset_type,
                                     change_pct=change_pct,
                                     current_price=price,
+                                    currency=data.get("currency", "INR"),
                                     ai_analysis=ai_analysis
                                 )
                                 
@@ -152,7 +153,8 @@ async def send_scheduled_report(user_id: str):
                     "asset_type": "stock",
                     "current_price": data["price"],
                     "previous_price": data["previous_close"],
-                    "change_pct": data["change_pct"]
+                    "change_pct": data["change_pct"],
+                    "currency": data.get("currency", "INR")
                 })
             except Exception:
                 pass
@@ -165,7 +167,8 @@ async def send_scheduled_report(user_id: str):
                     "asset_type": "mf",
                     "current_price": data["nav"],
                     "previous_price": data["previous_nav"],
-                    "change_pct": data["change_pct"]
+                    "change_pct": data["change_pct"],
+                    "currency": "INR"
                 })
             except Exception:
                 pass
