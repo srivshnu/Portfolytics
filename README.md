@@ -13,7 +13,7 @@ What sets TrackBucks apart is its deep integration with **Google's Gemini 3.5 Fl
 ## Features
 
 - **Track Stocks & Mutual Funds** — Add tickers (yfinance) and MF scheme codes (mfapi.in)
-- **AI Analysis** — Gemini 2.5 Flash explains performance with reasoning
+- **AI Analysis** — Gemini 2.5 Flash explains performance with reasoning, STRICTLY FOR EDUCATION PURPOSES. DO NOT USE IT AS ARECOMMENDATION FOR REAL-TIME TRADES
 - **Scheduled Reports** — Choose your frequency and time, delivered to Gmail
 - **Disaster Alerts** — Immediate email when assets drop beyond your threshold
 - **Secure Auth** — bcrypt-hashed passwords, signed session cookies
