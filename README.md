@@ -16,7 +16,7 @@ What sets TrackBucks apart is its deep integration with **Google's Gemini AI** (
 
 - **Track Stocks & Mutual Funds** — Add tickers via Yahoo Finance and MF scheme codes via mfapi.in
 - **"Did You Mean?" Smart Search** — Fuzzy search for both stocks and mutual funds with suggestion tables
-- **AI Analysis with Structured Outputs** — Gemini returns strict JSON (via Pydantic schemas), then assembled into conversational Markdown for display
+- **AI Analysis with Structured Outputs** — Gemini returns strict JSON (via Pydantic schemas), then assembled into conversational Markdown for display. **STRICTLY FOR EDUCATION PURPOSES. DO NOT USE IT AS A RECOMMENDATION FOR REAL-TIME TRADES.**
 - **Native System Instructions** — AI persona rules sit at a higher privilege layer in the model's attention mechanism, ensuring consistent tone and format
 - **Automatic Model Fallback** — If the primary Gemini model is overloaded (503/429), the app silently falls back through a priority chain
 - **Timezone-Aware Scheduling** — Users select their timezone from 597 options; APScheduler triggers reports in the correct local time
@@ -25,6 +25,7 @@ What sets TrackBucks apart is its deep integration with **Google's Gemini AI** (
 - **Premium Email Templates** — HTML emails styled with the Indian ₹500 note palette (cream, sage green, warm brown) with proper Markdown rendering
 - **Secure Auth** — bcrypt-hashed passwords, signed session cookies via itsdangerous
 - **MongoDB Atlas with Local Fallback** — Tries cloud database first, gracefully falls back to localhost if Atlas is unreachable
+
 
 ## Tech Stack
 
