@@ -7,7 +7,6 @@ class Settings(BaseSettings):
     MONGO_DB: str = "trackbucks"
     SECRET_KEY: str = "change-me-to-a-long-random-string"
     GEMINI_API_KEY: str = ""
-    RESEND_API_KEY: str = ""
     SMTP_EMAIL: str = ""
     SMTP_PASSWORD: str = ""
     SMTP_HOST: str = "smtp.gmail.com"
