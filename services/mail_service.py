@@ -38,7 +38,7 @@ def build_report_html(user_name: str, assets_data: list, ai_report: str) -> str:
         rows += f"""
         <tr>
             <td style="padding: 12px 15px; border-bottom: 1px solid #E0E0E0; color: #333333; font-weight: 500;">{a.get('name')} <span style="color: #8B8C89; font-size: 0.9em; font-weight: normal;">({a.get('asset_type')})</span></td>
-            <td style="padding: 12px 15px; border-bottom: 1px solid #E0E0E0; color: #333333;">{a.get('current_price')}</td>
+            <td style="padding: 12px 15px; border-bottom: 1px solid #E0E0E0; color: #333333;">₹{a.get('current_price')}</td>
             <td style="padding: 12px 15px; border-bottom: 1px solid #E0E0E0; color: {color}; font-weight: bold;">{sign}{a.get('change_pct')}%</td>
         </tr>
         """
@@ -103,7 +103,7 @@ def build_alert_html(user_name: str, asset_name: str, asset_type: str, change_pc
                 
                 <div style="background-color: #FDEDEC; border-radius: 8px; padding: 20px; margin: 25px 0; border: 1px solid #F5B7B1; text-align: center;">
                     <h2 style="margin: 0 0 10px 0; color: #C0392B; font-size: 22px;">{asset_name} <span style="font-size: 16px; color: #922B21; font-weight: normal;">({asset_type})</span></h2>
-                    <p style="margin: 5px 0; font-size: 16px; color: #641E16;">Current Price: <strong>{current_price}</strong></p>
+                    <p style="margin: 5px 0; font-size: 16px; color: #641E16;">Current Price: <strong>₹{current_price}</strong></p>
                     <p style="margin: 5px 0; font-size: 18px; color: #C0392B;">Today's Drop: <strong>{change_pct}%</strong></p>
                 </div>
                 
