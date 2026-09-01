@@ -9,15 +9,32 @@ async def get_stock_price(ticker: str) -> dict:
             info = t.info
             if not info:
                 raise ValueError(f"Invalid ticker or no data: {ticker}")
+
             price = info.get('regularMarketPrice') or info.get('currentPrice') or info.get('previousClose')
             if price is None:
                 raise ValueError(f"Could not extract price for {ticker}")
-            
-            previous_close = info.get('previousClose', price)
-            change = price - previous_close
-            change_pct = (change / previous_close * 100) if previous_close else 0.0
+
+            # Use Yahoo's pre-computed change fields; fall back to manual calculation.
+            # Guard against previousClose being present in the dict but set to None.
+            change = info.get('regularMarketChange')
+            change_pct = info.get('regularMarketChangePercent')
+
+            previous_close = (
+                info.get('regularMarketPreviousClose')
+                or info.get('previousClose')
+            )
+
+            if change is None or change_pct is None:
+                if previous_close:
+                    change = price - previous_close
+                    change_pct = (change / previous_close * 100)
+                else:
+                    change = 0.0
+                    change_pct = 0.0
+
+            previous_close = previous_close or price
             name = info.get('shortName') or info.get('longName') or ticker
-            
+
             return {
                 "ticker": ticker,
                 "name": name,
