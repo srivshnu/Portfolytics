@@ -49,6 +49,44 @@ async def add_stock(request: Request, ticker: str = Form(...)):
     set_flash(response, f"Successfully added {ticker}", "success")
     return response
 
+@router.post("/add-stock-confirm")
+async def add_stock_confirm(request: Request, ticker: str = Form(...), name: str = Form(...)):
+    """Called when user clicks Add from the Did you mean? search results.
+    Skips validate_ticker since the user already selected a confirmed result."""
+    user = await require_auth(request)
+
+    ticker = ticker.strip().upper()
+    name = name.strip()
+
+    if not ticker:
+        response = RedirectResponse(url="/add-stock", status_code=303)
+        set_flash(response, "Ticker cannot be empty.", "error")
+        return response
+
+    db = get_db()
+    watchlist = await db.watchlists.find_one({"user_id": str(user["_id"])})
+    if watchlist:
+        for s in watchlist.get("stocks", []):
+            if s["ticker"] == ticker:
+                response = RedirectResponse(url="/dashboard", status_code=303)
+                set_flash(response, "Already tracking this stock.", "error")
+                return response
+
+    await db.watchlists.update_one(
+        {"user_id": str(user["_id"])},
+        {"$push": {"stocks": {
+            "ticker": ticker,
+            "name": name or ticker,
+            "added_at": datetime.now(timezone.utc)
+        }}},
+        upsert=True
+    )
+
+    response = RedirectResponse(url="/dashboard", status_code=303)
+    set_flash(response, f"Successfully added {ticker}.", "success")
+    return response
+
+
 @router.post("/add-mf")
 async def add_mf(request: Request, fund_input: str = Form(...)):
     """Handle both direct scheme code entry and name-based search (Did you mean?)."""

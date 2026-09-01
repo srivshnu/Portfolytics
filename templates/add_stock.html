@@ -36,8 +36,9 @@
                                 <td>{{ stock.name }}</td>
                                 <td>{{ stock.exchange }}</td>
                                 <td>
-                                    <form method="POST" action="/add-stock" style="display:inline;">
+                                    <form method="POST" action="/add-stock-confirm" style="display:inline;">
                                         <input type="hidden" name="ticker" value="{{ stock.ticker }}">
+                                        <input type="hidden" name="name" value="{{ stock.name }}">
                                         <button type="submit" class="btn btn-small btn-primary">Add</button>
                                     </form>
                                 </td>
