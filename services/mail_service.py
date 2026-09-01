@@ -54,10 +54,16 @@ async def send_email(to_email: str, subject: str, html_body: str) -> bool:
 
 def build_report_html(user_name: str, assets_data: list, ai_report: str, market_education: str = "") -> str:
     rows = ""
+    # Global currency mapping matching the frontend's currency_fmt
+    symbols = {'USD': '$', 'INR': '₹', 'EUR': '€', 'GBP': '£', 'JPY': '¥', 'CAD': 'C$', 'AUD': 'A$'}
+    
     for a in assets_data:
         color = "#9CAF88" if a.get('change_pct', 0) >= 0 else "#C0392B"
         sign = "+" if a.get('change_pct', 0) > 0 else ""
-        sym = "$" if a.get('currency') == "USD" else "₹"
+        
+        curr_code = str(a.get('currency', 'INR')).upper()
+        sym = symbols.get(curr_code, f"{curr_code} ")
+        
         rows += f"""
         <tr>
             <td style="padding: 12px 15px; border-bottom: 1px solid #E0E0E0; color: #333333; font-weight: 500;">{a.get('name')} <span style="color: #8B8C89; font-size: 0.9em; font-weight: normal;">({a.get('asset_type')})</span></td>
@@ -124,7 +130,10 @@ def build_report_html(user_name: str, assets_data: list, ai_report: str, market_
 def build_alert_html(user_name: str, asset_name: str, asset_type: str, change_pct: float, current_price: float, currency: str, ai_analysis: str) -> str:
     import markdown
     ai_html = markdown.markdown(ai_analysis)
-    sym = "$" if currency == "USD" else "₹"
+    
+    symbols = {'USD': '$', 'INR': '₹', 'EUR': '€', 'GBP': '£', 'JPY': '¥', 'CAD': 'C$', 'AUD': 'A$'}
+    curr_code = str(currency).upper() if currency else 'INR'
+    sym = symbols.get(curr_code, f"{curr_code} ")
     
     return f"""
     <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #F9F6EE; padding: 40px 20px; line-height: 1.6;">
