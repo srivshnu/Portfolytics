@@ -1,10 +1,8 @@
 import asyncio
 import time
-import yfinance as yf
+import requests
 
 # ─── 10-minute price cache ────────────────────────────────────────────────────
-# Prevents the dashboard and scheduler from hitting Yahoo repeatedly for the
-# same ticker within the same polling window.
 _cache: dict = {}        # ticker -> (price_dict, expires_at)
 _CACHE_TTL = 600         # seconds
 
@@ -15,6 +13,24 @@ def _from_cache(ticker: str) -> dict | None:
 def _to_cache(ticker: str, data: dict):
     _cache[ticker] = (data, time.time() + _CACHE_TTL)
 
+# ─── Raw Yahoo Finance API (No yfinance library!) ────────────────────────────
+# We discovered that yfinance hangs for 10 minutes doing exponential backoffs 
+# when query2 is IP-blocked. We can bypass this entirely by using query1 
+# directly without crumbs.
+
+def _fetch_yahoo_chart(ticker: str) -> dict:
+    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}"
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+    r = requests.get(url, headers=headers, timeout=10)
+    r.raise_for_status()
+    
+    data = r.json()
+    result = data.get('chart', {}).get('result')
+    if not result:
+        raise ValueError(f"No data returned for {ticker}")
+        
+    return result[0]['meta']
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Public async functions
 # ─────────────────────────────────────────────────────────────────────────────
@@ -24,33 +40,17 @@ async def get_stock_price(ticker: str) -> dict:
         return cached
 
     def _fetch():
-        t = yf.Ticker(ticker)
-        info = t.info
-        if not info:
-            raise ValueError(f"Invalid ticker or no data: {ticker}")
-
-        price = info.get('regularMarketPrice') or info.get('currentPrice') or info.get('previousClose')
+        meta = _fetch_yahoo_chart(ticker)
+        
+        price = meta.get('regularMarketPrice')
         if price is None:
             raise ValueError(f"Could not extract price for {ticker}")
 
-        change = info.get('regularMarketChange')
-        change_pct = info.get('regularMarketChangePercent')
+        previous_close = meta.get('previousClose') or meta.get('chartPreviousClose') or price
+        change = price - previous_close
+        change_pct = (change / previous_close * 100) if previous_close else 0.0
 
-        previous_close = (
-            info.get('regularMarketPreviousClose')
-            or info.get('previousClose')
-        )
-
-        if change is None or change_pct is None:
-            if previous_close:
-                change = price - previous_close
-                change_pct = (change / previous_close * 100)
-            else:
-                change = 0.0
-                change_pct = 0.0
-
-        previous_close = previous_close or price
-        name = info.get('shortName') or info.get('longName') or ticker
+        name = meta.get('shortName') or meta.get('longName') or ticker
 
         data = {
             "ticker": ticker,
@@ -59,7 +59,7 @@ async def get_stock_price(ticker: str) -> dict:
             "previous_close": previous_close,
             "change": change,
             "change_pct": change_pct,
-            "currency": info.get('currency', 'INR')
+            "currency": meta.get('currency', 'INR')
         }
         _to_cache(ticker, data)
         return data
@@ -86,44 +86,24 @@ async def get_stock_prices_batch(tickers: list) -> dict:
         return results
 
     def _fetch():
-        df = yf.download(missing, period='2d', progress=False, auto_adjust=True)
         batch = {}
-        if df.empty:
-            return batch
-
-        multi = len(missing) > 1
-        try:
-            close = df['Close'] if not multi else df['Close']
-        except KeyError:
-            return batch
-
-        # In yf.download, currency is not returned. We will fetch info for each missing to cache properly,
-        # or we just rely on Ticker(t).info to get accurate currencies for the batch.
-        # Since downloading batch info doesn't exist cleanly in yfinance without loop, we'll just loop Ticker().
-        # yf.download was causing the missing currency bug! Let's just use Ticker.info in a loop
-        # since yf's internal requests handle rate limits better now.
         for t in missing:
             try:
-                tk = yf.Ticker(t)
-                info = tk.info
-                if not info:
-                    continue
-                price = info.get('regularMarketPrice') or info.get('currentPrice') or info.get('previousClose')
+                meta = _fetch_yahoo_chart(t)
+                price = meta.get('regularMarketPrice')
                 if not price:
                     continue
-                prev = info.get('regularMarketPreviousClose') or info.get('previousClose') or price
-                change = info.get('regularMarketChange')
-                change_pct = info.get('regularMarketChangePercent')
-                if change is None or change_pct is None:
-                    change = price - prev
-                    change_pct = (change / prev * 100) if prev else 0.0
+                    
+                prev = meta.get('previousClose') or meta.get('chartPreviousClose') or price
+                change = price - prev
+                change_pct = (change / prev * 100) if prev else 0.0
                 
                 data = {
                     'price': price,
                     'previous_close': prev,
                     'change': change,
                     'change_pct': change_pct,
-                    'currency': info.get('currency', 'INR')
+                    'currency': meta.get('currency', 'INR')
                 }
                 _to_cache(t, data)
                 batch[t] = data
@@ -142,42 +122,57 @@ async def get_stock_prices_batch(tickers: list) -> dict:
 async def validate_ticker(ticker: str) -> dict | None:
     try:
         def _fetch():
-            t = yf.Ticker(ticker)
-            return t.info
-        info = await asyncio.to_thread(_fetch)
-        if not info or ('shortName' not in info and 'longName' not in info and 'regularMarketPrice' not in info):
-            return None
-        return {
-            "ticker": ticker,
-            "name": info.get('shortName') or info.get('longName') or ticker,
-            "currency": info.get('currency', 'INR')
-        }
+            meta = _fetch_yahoo_chart(ticker)
+            if not meta.get('regularMarketPrice'):
+                return None
+            return {
+                "ticker": ticker,
+                "name": meta.get('shortName') or meta.get('longName') or ticker,
+                "currency": meta.get('currency', 'INR')
+            }
+        return await asyncio.to_thread(_fetch)
     except Exception:
         return None
 
 async def get_stock_history(ticker: str, days: int = 7) -> list:
+    # History can still use query1 but we need historical data
     def _fetch():
-        t = yf.Ticker(ticker)
-        hist = t.history(period=f'{days}d')
-        return [
-            {'date': d.strftime('%Y-%m-%d'), 'close': float(row['Close'])}
-            for d, row in hist.iterrows()
-        ]
+        url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range={days}d"
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        r = requests.get(url, headers=headers, timeout=10)
+        r.raise_for_status()
+        
+        result = r.json()['chart']['result'][0]
+        timestamps = result.get('timestamp', [])
+        close_prices = result.get('indicators', {}).get('quote', [{}])[0].get('close', [])
+        
+        from datetime import datetime
+        history = []
+        for ts, close in zip(timestamps, close_prices):
+            if close is not None:
+                history.append({
+                    'date': datetime.fromtimestamp(ts).strftime('%Y-%m-%d'),
+                    'close': float(close)
+                })
+        return history
     return await asyncio.to_thread(_fetch)
 
 async def search_stock(query: str) -> list:
     try:
         def _fetch():
-            # Keep search fuzzy via raw yfinance logic
-            import requests
-            s = yf.Search(query, max_results=10, enable_fuzzy_query=True)
+            url = f"https://query2.finance.yahoo.com/v1/finance/search?q={query}&quotesCount=10"
+            headers = {'User-Agent': 'Mozilla/5.0'}
+            r = requests.get(url, headers=headers, timeout=5)
+            r.raise_for_status()
+            
+            quotes = r.json().get('quotes', [])
             return [
                 {
                     'ticker': q.get('symbol'),
                     'name': q.get('shortname') or q.get('longname') or q.get('symbol'),
                     'exchange': q.get('exchDisp', ''),
                 }
-                for q in s.quotes
+                for q in quotes
                 if q.get('quoteType') in ['EQUITY', 'ETF', 'MUTUALFUND'] and q.get('symbol')
             ]
         return await asyncio.to_thread(_fetch)
