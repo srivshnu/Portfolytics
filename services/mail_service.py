@@ -52,7 +52,7 @@ async def send_email(to_email: str, subject: str, html_body: str) -> bool:
         
     return await asyncio.to_thread(_send)
 
-def build_report_html(user_name: str, assets_data: list, ai_report: str) -> str:
+def build_report_html(user_name: str, assets_data: list, ai_report: str, market_education: str = "") -> str:
     rows = ""
     for a in assets_data:
         color = "#9CAF88" if a.get('change_pct', 0) >= 0 else "#C0392B"
@@ -69,6 +69,16 @@ def build_report_html(user_name: str, assets_data: list, ai_report: str) -> str:
     import markdown
     # Convert AI markdown to HTML
     ai_html = markdown.markdown(ai_report)
+    # Convert education markdown to HTML (empty string returns empty string)
+    education_html = markdown.markdown(market_education) if market_education else ""
+    education_section = f"""
+                <div style="margin-top: 35px; background-color: #F0F4EC; border-radius: 10px; padding: 25px; border: 1px solid #C8D9BE;">
+                    <h2 style="color: #5A7A45; font-size: 20px; margin-top: 0; border-bottom: 2px solid #9CAF88; padding-bottom: 8px;">📚 Education Corner — Today's Top Performers</h2>
+                    <div style="color: #444444; font-size: 15px;">
+                        {education_html}
+                    </div>
+                </div>
+    """ if education_html else ""
         
     return f"""
     <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #F9F6EE; padding: 40px 20px; line-height: 1.6;">
@@ -100,6 +110,8 @@ def build_report_html(user_name: str, assets_data: list, ai_report: str) -> str:
                 <div style="color: #444444; font-size: 15px; background-color: #FAFAFA; padding: 20px; border-left: 4px solid #9CAF88; border-radius: 0 8px 8px 0;">
                     {ai_html}
                 </div>
+                
+                {education_section}
                 
                 <p style="margin-top: 40px; font-size: 12px; color: #8B8C89; text-align: center; border-top: 1px solid #EAEAEA; padding-top: 20px;">
                     Generated at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}

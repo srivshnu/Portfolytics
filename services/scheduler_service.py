@@ -9,7 +9,8 @@ from config import settings
 from database import get_db
 from services.stock_service import get_stock_price
 from services.mf_service import get_mf_nav
-from services.gemini_service import analyze_asset, generate_portfolio_report
+from services.gemini_service import analyze_asset, generate_portfolio_report, generate_market_education
+from services.market_education_service import get_top_performers
 from services.mail_service import send_email, build_report_html, build_alert_html
 
 scheduler = None
@@ -174,8 +175,13 @@ async def send_scheduled_report(user_id: str):
                 pass
                 
         if assets_data:
-            ai_report = await generate_portfolio_report(assets_data)
-            html_body = build_report_html(user.get("name", "User"), assets_data, ai_report)
+            # Run portfolio report and market education concurrently for speed
+            ai_report, top_performers = await asyncio.gather(
+                generate_portfolio_report(assets_data),
+                get_top_performers()
+            )
+            market_education = await generate_market_education(top_performers)
+            html_body = build_report_html(user.get("name", "User"), assets_data, ai_report, market_education)
             
             await send_email(
                 to_email=user.get("email"),

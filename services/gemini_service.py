@@ -74,7 +74,56 @@ class PortfolioReportResponse(BaseModel):
     diversification_education: str = Field(description="Discuss historically stable asset classes to offset weaknesses, without suggesting specific tickers")
     behavioral_coaching: str
 
+class MarketEducationItem(BaseModel):
+    name: str = Field(description="Name of the stock or mutual fund")
+    change_pct: str = Field(description="Today's percentage change, e.g. +3.2%")
+    reason: str = Field(description="Simple 2-3 sentence educational explanation of WHY this asset performed well today in 10th-grade language, citing real events or business fundamentals")
+
+class MarketEducationResponse(BaseModel):
+    intro: str = Field(description="1 friendly opening sentence for the Education Corner section")
+    top_stocks: list[MarketEducationItem] = Field(description="Top 3 performing stocks today with educational reasoning")
+    top_mfs: list[MarketEducationItem] = Field(description="Top 3 performing mutual funds today with educational reasoning")
+    closing_lesson: str = Field(description="One grounding educational lesson the user can learn from today's top performers")
+
 DISCLAIMER = "\n\n---\n*⚠️ Caution: My analysis is for your learning and perspective only. Please do not use this as direct financial advice for making trading decisions.*"
+
+async def generate_market_education(top_performers: dict) -> str:
+    """Generate an educational 'Education Corner' section about today's top performers."""
+    if not settings.GEMINI_API_KEY:
+        return ""
+    try:
+        client = genai.Client(api_key=settings.GEMINI_API_KEY)
+        stocks_text = "\n".join([f"- {s['name']} ({s['ticker']}): +{s['change_pct']:.2f}%" for s in top_performers.get("top_stocks", [])])
+        mfs_text = "\n".join([f"- {m['name']}: +{m['change_pct']:.2f}%" for m in top_performers.get("top_mfs", [])])
+        user_msg = (
+            f"Today's top performing stocks:\n{stocks_text}\n\n"
+            f"Today's top performing mutual funds:\n{mfs_text}\n\n"
+            "For each of these, explain in simple 10th-grade language WHY they performed well today. "
+            "Link it to real events, sector trends, or business fundamentals. "
+            "This is purely educational — do NOT suggest buying any of these. "
+            "Close with one broad investment lesson the user can take away from today's market."
+        )
+        sys_instruction = (
+            "You are a PhD economist and trusted close friend explaining today's market winners purely for education. "
+            "Never recommend buying. Speak in simple 10th-grade language. Be concise. Link performance to real events."
+        )
+        raw = await _generate(client, sys_instruction, user_msg, MarketEducationResponse)
+        data = json.loads(raw)
+
+        formatted = f"### 📚 Education Corner — Today's Top Performers\n{data.get('intro')}\n\n"
+        formatted += "**🏆 Top Stocks Today:**\n"
+        for item in data.get("top_stocks", []):
+            formatted += f"- **{item.get('name')}** ({item.get('change_pct')}): {item.get('reason')}\n"
+        formatted += "\n**🏆 Top Mutual Funds Today:**\n"
+        for item in data.get("top_mfs", []):
+            formatted += f"- **{item.get('name')}** ({item.get('change_pct')}): {item.get('reason')}\n"
+        formatted += f"\n**💡 Today's Lesson:** {data.get('closing_lesson')}"
+        formatted += "\n\n*⚠️ This section is purely educational. None of the above are recommendations to buy.*"
+        return formatted
+    except Exception as e:
+        print(f"[Portfolytics] Market education generation failed: {e}")
+        return ""
+
 
 async def analyze_asset(asset_data: dict) -> str:
     if not settings.GEMINI_API_KEY:
