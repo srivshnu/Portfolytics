@@ -6,28 +6,50 @@ from datetime import datetime
 from config import settings
 
 async def send_email(to_email: str, subject: str, html_body: str) -> bool:
-    if not settings.SMTP_EMAIL or not settings.SMTP_PASSWORD:
-        print("Warning: SMTP_EMAIL or SMTP_PASSWORD is not set.")
+    def _send():
+        # --- Mode 1: Gmail SMTP (Prioritized for local testing) ---
+        if settings.SMTP_EMAIL and settings.SMTP_PASSWORD:
+            try:
+                msg = MIMEMultipart()
+                msg['From'] = settings.SMTP_EMAIL
+                msg['To'] = to_email
+                msg['Subject'] = subject
+                msg.attach(MIMEText(html_body, 'html'))
+                
+                with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
+                    server.starttls()
+                    server.login(settings.SMTP_EMAIL, settings.SMTP_PASSWORD)
+                    server.send_message(msg)
+                print(f"[Portfolytics] Email sent via SMTP to {to_email}")
+                return True
+            except Exception as e:
+                print(f"[Portfolytics] SMTP failed: {e}. Trying Resend fallback...")
+                
+        # --- Mode 2: Resend API (Fallback for Render Live) ---
+        if settings.RESEND_API_KEY:
+            try:
+                import httpx
+                headers = {
+                    "Authorization": f"Bearer {settings.RESEND_API_KEY}",
+                    "Content-Type": "application/json"
+                }
+                data = {
+                    "from": "Portfolytics <onboarding@resend.dev>",
+                    "to": [to_email],
+                    "subject": subject,
+                    "html": html_body
+                }
+                # Sync httpx request inside to_thread
+                r = httpx.post("https://api.resend.com/emails", headers=headers, json=data, timeout=10.0)
+                r.raise_for_status()
+                print(f"[Portfolytics] Email sent via Resend API to {to_email}")
+                return True
+            except Exception as e:
+                print(f"[Portfolytics] Resend API failed: {e}")
+                
+        print("[Portfolytics] No valid email configuration found (SMTP or Resend).")
         return False
         
-    def _send():
-        try:
-            msg = MIMEMultipart()
-            msg['From'] = settings.SMTP_EMAIL
-            msg['To'] = to_email
-            msg['Subject'] = subject
-            
-            msg.attach(MIMEText(html_body, 'html'))
-            
-            with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
-                server.starttls()
-                server.login(settings.SMTP_EMAIL, settings.SMTP_PASSWORD)
-                server.send_message(msg)
-            return True
-        except Exception as e:
-            print(f"Error sending email: {e}")
-            return False
-            
     return await asyncio.to_thread(_send)
 
 def build_report_html(user_name: str, assets_data: list, ai_report: str) -> str:
