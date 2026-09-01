@@ -7,7 +7,7 @@ from apscheduler.triggers.interval import IntervalTrigger
 
 from config import settings
 from database import get_db
-from services.stock_service import get_stock_price
+from services.stock_service import get_stock_price, get_stock_prices_batch
 from services.mf_service import get_mf_nav
 from services.gemini_service import analyze_asset, generate_portfolio_report, generate_market_education
 from services.market_education_service import get_top_performers
@@ -20,25 +20,29 @@ async def disaster_monitor():
         db = get_db()
         watchlists = await db.watchlists.find().to_list(length=None)
         
-        # Aggregate unique assets
-        stocks = set()
+        # Build maps: ticker/scheme_code -> stored name (from DB — no extra API calls needed)
+        stocks = {}   # ticker -> name
         mfs = set()
-        
+
         for w in watchlists:
             for s in w.get('stocks', []):
-                stocks.add(s['ticker'])
+                stocks[s['ticker']] = s['name']
             for m in w.get('mutual_funds', []):
                 mfs.add(m['scheme_code'])
-                
+
         asset_updates = []
-        
-        for ticker in stocks:
-            try:
-                data = await get_stock_price(ticker)
+
+        # Batch-fetch ALL stock prices in a single yf.download() call (one crumb, one request)
+        if stocks:
+            batch = await get_stock_prices_batch(list(stocks.keys()))
+            for ticker, data in batch.items():
+                data['name'] = stocks.get(ticker, ticker)
                 asset_updates.append({"type": "stock", "id": ticker, "data": data})
-            except Exception as e:
-                print(f"Error fetching stock {ticker}: {e}")
-                
+            # Track tickers that completely failed the batch
+            for ticker in stocks:
+                if ticker not in batch:
+                    print(f"[scheduler] No batch data for stock {ticker}")
+
         for scheme_code in mfs:
             try:
                 data = await get_mf_nav(scheme_code)
