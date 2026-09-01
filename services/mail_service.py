@@ -73,14 +73,17 @@ def build_report_html(user_name: str, assets_data: list, ai_report: str, market_
         """
         
     import markdown
-    # Convert AI markdown to HTML
-    ai_html = markdown.markdown(ai_report)
-    # Convert education markdown to HTML (empty string returns empty string)
-    education_html = markdown.markdown(market_education) if market_education else ""
+    # Convert AI markdown to HTML with extensions for proper spacing and lists
+    md_extensions = ['nl2br', 'sane_lists']
+    ai_html = markdown.markdown(ai_report, extensions=md_extensions)
+    
+    # Convert education markdown to HTML
+    education_html = markdown.markdown(market_education, extensions=md_extensions) if market_education else ""
+    
     education_section = f"""
                 <div style="margin-top: 35px; background-color: #F0F4EC; border-radius: 10px; padding: 25px; border: 1px solid #C8D9BE;">
                     <h2 style="color: #5A7A45; font-size: 20px; margin-top: 0; border-bottom: 2px solid #9CAF88; padding-bottom: 8px;">📚 Education Corner — Today's Top Performers</h2>
-                    <div style="color: #444444; font-size: 15px;">
+                    <div style="color: #444444; font-size: 15px; line-height: 1.6;">
                         {education_html}
                     </div>
                 </div>
@@ -112,8 +115,8 @@ def build_report_html(user_name: str, assets_data: list, ai_report: str, market_
                     </table>
                 </div>
                 
-                <h2 style="color: #9CAF88; font-size: 20px; border-bottom: 2px solid #F5F5DC; padding-bottom: 8px; margin-bottom: 20px;">My Thoughts on This</h2>
-                <div style="color: #444444; font-size: 15px; background-color: #FAFAFA; padding: 20px; border-left: 4px solid #9CAF88; border-radius: 0 8px 8px 0;">
+                <h2 style="color: #9CAF88; font-size: 20px; border-bottom: 2px solid #F5F5DC; padding-bottom: 8px; margin-bottom: 20px;">Educational Overview</h2>
+                <div style="color: #444444; font-size: 15px; background-color: #FAFAFA; padding: 20px; border-left: 4px solid #9CAF88; border-radius: 0 8px 8px 0; line-height: 1.6;">
                     {ai_html}
                 </div>
                 
@@ -129,7 +132,8 @@ def build_report_html(user_name: str, assets_data: list, ai_report: str, market_
 
 def build_alert_html(user_name: str, asset_name: str, asset_type: str, change_pct: float, current_price: float, currency: str, ai_analysis: str) -> str:
     import markdown
-    ai_html = markdown.markdown(ai_analysis)
+    md_extensions = ['nl2br', 'sane_lists']
+    ai_html = markdown.markdown(ai_analysis, extensions=md_extensions)
     
     symbols = {'USD': '$', 'INR': '₹', 'EUR': '€', 'GBP': '£', 'JPY': '¥', 'CAD': 'C$', 'AUD': 'A$'}
     curr_code = str(currency).upper() if currency else 'INR'
@@ -152,8 +156,8 @@ def build_alert_html(user_name: str, asset_name: str, asset_type: str, change_pc
                     <p style="margin: 5px 0; font-size: 18px; color: #C0392B;">Today's Drop: <strong>{change_pct}%</strong></p>
                 </div>
                 
-                <h2 style="color: #8B7355; font-size: 20px; border-bottom: 2px solid #F5F5DC; padding-bottom: 8px; margin-bottom: 20px;">Let's Break This Down</h2>
-                <div style="color: #444444; font-size: 15px; background-color: #FAFAFA; padding: 20px; border-left: 4px solid #8B7355; border-radius: 0 8px 8px 0;">
+                <h2 style="color: #8B7355; font-size: 20px; border-bottom: 2px solid #F5F5DC; padding-bottom: 8px; margin-bottom: 20px;">Educational Context</h2>
+                <div style="color: #444444; font-size: 15px; background-color: #FAFAFA; padding: 20px; border-left: 4px solid #8B7355; border-radius: 0 8px 8px 0; line-height: 1.6;">
                     {ai_html}
                 </div>
                 
