@@ -20,20 +20,20 @@ async def connect_db():
         )
         db = client[settings.MONGO_DB]
         await client.admin.command("ping")
-        print(f"[TrackBucks] Connected to MongoDB (primary): {settings.MONGO_DB}")
+        print(f"[Portfolytics] Connected to MongoDB (primary): {settings.MONGO_DB}")
     except Exception as primary_err:
-        print(f"[TrackBucks] Primary MongoDB connection failed: {primary_err}")
+        print(f"[Portfolytics] Primary MongoDB connection failed: {primary_err}")
 
         # Fall back to local MongoDB
         if FALLBACK_URI not in settings.MONGODB_URI:
-            print(f"[TrackBucks] Trying local MongoDB fallback...")
+            print(f"[Portfolytics] Trying local MongoDB fallback...")
             try:
                 client = AsyncIOMotorClient(FALLBACK_URI, serverSelectionTimeoutMS=5000)
                 db = client[settings.MONGO_DB]
                 await client.admin.command("ping")
-                print(f"[TrackBucks] Connected to LOCAL MongoDB fallback: {settings.MONGO_DB}")
+                print(f"[Portfolytics] Connected to LOCAL MongoDB fallback: {settings.MONGO_DB}")
             except Exception as fallback_err:
-                print(f"[TrackBucks] Local MongoDB also unavailable: {fallback_err}")
+                print(f"[Portfolytics] Local MongoDB also unavailable: {fallback_err}")
                 raise RuntimeError(
                     "Could not connect to any MongoDB instance. "
                     "Check your network/Atlas settings or start local MongoDB."
@@ -52,7 +52,7 @@ async def close_db():
     global client
     if client:
         client.close()
-        print("[TrackBucks] MongoDB connection closed.")
+        print("[Portfolytics] MongoDB connection closed.")
 
 
 def get_db():

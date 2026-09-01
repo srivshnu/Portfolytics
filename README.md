@@ -1,10 +1,10 @@
-# TrackBucks
+# Portfolytics
 
-**TrackBucks: AI-Powered Behavioral Portfolio Management**
+**Portfolytics: AI-Powered Behavioral Portfolio Management**
 
-TrackBucks is a full-stack web application designed for savings-oriented retail investors who experience stock market anxiety. Built with **FastAPI, MongoDB, and Jinja2**, the platform allows users to track domestic and international stocks alongside mutual funds with real-time financial data.
+Portfolytics is a full-stack web application designed for savings-oriented retail investors who experience stock market anxiety. Built with **FastAPI, MongoDB, and Jinja2**, the platform allows users to track domestic and international stocks alongside mutual funds with real-time financial data.
 
-What sets TrackBucks apart is its deep integration with **Google's Gemini AI** (with automatic model fallback: 3.7 → 3.5 → 3.1-lite). The AI operates under a carefully engineered persona — a **PhD Economist and trusted close friend** — constrained by JSON-structured system instructions fed via the **Native System Instruction** parameter and enforced through **Pydantic Structured Outputs**. It provides:
+What sets Portfolytics apart is its deep integration with **Google's Gemini AI** (with automatic model fallback: 3.7 → 3.5 → 3.1-lite). The AI operates under a carefully engineered persona — a **PhD Economist and trusted close friend** — constrained by JSON-structured system instructions fed via the **Native System Instruction** parameter and enforced through **Pydantic Structured Outputs**. It provides:
 - **Event-Based Reasoning**: Links every price movement (growth, loss, or stagnation) to specific global or local events to educate the user on *why* things are changing.
 - **Hype Protection**: Actively warns users away from stocks trading on social media hype rather than business fundamentals (e.g., meme stocks, news-driven bubbles).
 - **Alternative Suggestions**: Recommends historically stable alternatives in a similar price bracket when an asset underperforms.
@@ -98,7 +98,7 @@ Open http://localhost:8000 in your browser.
 ## Project Structure
 
 ```
-TrackBucks/
+Portfolytics/
 ├── main.py                  # FastAPI app entry point
 ├── config.py                # Pydantic Settings from .env
 ├── database.py              # MongoDB connection (Atlas + local fallback)

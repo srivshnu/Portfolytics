@@ -17,14 +17,14 @@ async def lifespan(app: FastAPI):
     # Start scheduler after DB is ready
     from services.scheduler_service import start_scheduler
     await start_scheduler()
-    print("[TrackBucks] Server ready.")
+    print("[Portfolytics] Server ready.")
     yield
     from services.scheduler_service import stop_scheduler
     await stop_scheduler()
     await close_db()
 
 
-app = FastAPI(title="TrackBucks", lifespan=lifespan)
+app = FastAPI(title="Portfolytics", lifespan=lifespan)
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")

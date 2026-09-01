@@ -179,7 +179,7 @@ async def send_scheduled_report(user_id: str):
             
             await send_email(
                 to_email=user.get("email"),
-                subject="TrackBucks Portfolio Report",
+                subject="Portfolytics Portfolio Report",
                 html_body=html_body
             )
             

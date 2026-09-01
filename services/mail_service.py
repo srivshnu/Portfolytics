@@ -52,7 +52,7 @@ def build_report_html(user_name: str, assets_data: list, ai_report: str) -> str:
     <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #F9F6EE; padding: 40px 20px; line-height: 1.6;">
         <div style="max-width: 600px; margin: 0 auto; background-color: #FFFFFF; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #EAEAEA;">
             <div style="background-color: #8B7355; color: #F9F6EE; padding: 25px 30px;">
-                <h1 style="margin: 0; font-size: 24px; font-weight: 600; letter-spacing: 0.5px;">TrackBucks Portfolio Review</h1>
+                <h1 style="margin: 0; font-size: 24px; font-weight: 600; letter-spacing: 0.5px;">Portfolytics Portfolio Review</h1>
             </div>
             
             <div style="padding: 30px;">
