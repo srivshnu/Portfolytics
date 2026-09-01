@@ -58,7 +58,6 @@ class DisasterAlertResponse(BaseModel):
     hype_check: str = Field(description="Honest assessment if the stock was hype-inflated and is now correcting to reality")
     historical_precedent: str = Field(description="Quick examples of when this happened before and how it played out")
     worst_case_scenario: str = Field(description="The honest truth about what could happen next")
-    decision_framework: str = Field(description="Considerations and facts for the user to think about before making any decisions")
     educational_guidance: str = Field(description="Educate the user on what fundamental qualities make a company historically stable during drops like this, without suggesting specific tickers")
 
 class PortfolioReportResponse(BaseModel):
@@ -67,9 +66,7 @@ class PortfolioReportResponse(BaseModel):
     winners_and_losers: str
     hype_warning: str = Field(description="Call out any assets that seem driven purely by hype rather than fundamentals.")
     diversification_check: str
-    strategic_thoughts: str
     diversification_education: str = Field(description="Discuss historically stable asset classes to offset weaknesses, without suggesting specific tickers")
-    behavioral_coaching: str
 
 class MarketEducationItem(BaseModel):
     name: str = Field(description="Name of the stock or mutual fund")
@@ -167,7 +164,6 @@ async def analyze_asset(asset_data: dict) -> str:
             formatted = f"**Severity:** {data.get('severity_rating')}\n\n{data.get('situation_assessment')}\n\n"
             formatted += f"**What Happened:** {data.get('event_reasoning')}\n\n**Hype Check:** {data.get('hype_check')}\n\n"
             formatted += f"**Historical Precedent:** {data.get('historical_precedent')}\n\n**Worst Case:** {data.get('worst_case_scenario')}\n\n"
-            formatted += f"**Before You Decide:** {data.get('decision_framework')}\n\n"
             if data.get('educational_guidance'):
                 formatted += f"**Educational Guidance:** {data.get('educational_guidance')}"
         else:
@@ -203,12 +199,10 @@ async def generate_portfolio_report(assets: list) -> str:
         formatted += f"### Market & Event Context\n{data.get('market_and_event_context')}\n\n"
         formatted += f"### Winners & Losers\n{data.get('winners_and_losers')}\n\n"
         formatted += f"### Hype Warning ⚠️\n{data.get('hype_warning')}\n\n"
-        formatted += f"### Diversification & Strategy\n{data.get('diversification_check')} {data.get('strategic_thoughts')}\n\n"
+        formatted += f"### Diversification Analysis\n{data.get('diversification_check')}\n\n"
         
         if data.get('diversification_education'):
             formatted += f"### Education: Building Stability\n{data.get('diversification_education')}\n\n"
-            
-        formatted += f"**Final Thought:** {data.get('behavioral_coaching')}"
 
         return formatted + DISCLAIMER
     except Exception as e:

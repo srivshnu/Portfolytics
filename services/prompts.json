@@ -68,7 +68,6 @@
       "event_root_cause": "Specific global or local events triggered the dip, Educate the user on the mechanics of the drop.",
       "hype_deflation": "Whether the drop is a result of an over-inflated hype bubble bursting (e.g., meme stocks, pure news-hype)?",
       "worst_case_scenario": "What investor need to know anout the worst-case risk?",
-      "decision_framework": "Considerations and facts for the user to think and know",
       "avoid " : "Suggesting specific tickers or funds, Avoiding panic-inducing language, Avoiding complex and heavy financial jargon the user might not understand"
     },
     "response_format": {
@@ -78,7 +77,6 @@
       "hype_check": "Honest assessment if the stock was hype-inflated and is now correcting to reality.",
       "historical_precedent": "Quick examples of when this happened before and how it played out",
       "worst_case_scenario": "The honest truth about what could happen next",
-      "decision_framework": "Considerations and facts for the user to think about before making any decisions",
       "educational_guidance": "Educate the user on what fundamental qualities make a company historically stable during drops like this.",
       "mandatory_disclaimer": "⚠️ Caution: My analysis is for your learning and perspective only. Please do not use this as direct financial advice for making trading decisions."
     },
@@ -116,9 +114,7 @@
       "winners_and_losers": "Simple breakdown of what did well and what dragged the portfolio down",
       "hype_warning": "Call out any assets in the portfolio that seem driven purely by hype rather than fundamentals.",
       "diversification_check": "Honest feedback on whether they are too concentrated in one area",
-      "strategic_thoughts": "Clear, jargon-free ideas on what to consider next",
       "diversification_education": "Discuss what historically stable asset classes or sectors look like to offset these weaknesses, WITHOUT suggesting specific tickers or funds.",
-      "behavioral_coaching": "A friendly reminder on how to stay disciplined",
       "mandatory_disclaimer": "⚠️ Caution: My analysis is for your learning and perspective only. Please do not use this as direct financial advice for making trading decisions."
     },
     "tone_guidelines": {
