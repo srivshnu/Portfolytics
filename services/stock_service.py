@@ -1,6 +1,5 @@
 import asyncio
 import yfinance as yf
-import httpx
 
 async def get_stock_price(ticker: str) -> dict:
     def _fetch():
@@ -80,25 +79,22 @@ async def get_stock_history(ticker: str, days: int = 7) -> list:
 async def search_stock(query: str) -> list:
     try:
         def _fetch():
-            headers = {'User-Agent': 'Mozilla/5.0'}
-            r = httpx.get(f'https://query2.finance.yahoo.com/v1/finance/search?q={query}', headers=headers, timeout=10)
-            r.raise_for_status()
-            return r.json().get('quotes', [])
-        
-        quotes = await asyncio.to_thread(_fetch)
-        results = []
-        for q in quotes:
-            if q.get('quoteType') in ['EQUITY', 'ETF', 'MUTUALFUND']:
-                ticker = q.get('symbol')
-                name = q.get('shortname') or q.get('longname') or ticker
-                exchange = q.get('exchDisp', '')
-                if ticker:
-                    results.append({
-                        "ticker": ticker,
-                        "name": name,
-                        "exchange": exchange
-                    })
-        return results
+            s = yf.Search(query, max_results=10, enable_fuzzy_query=True)
+            results = []
+            for q in s.quotes:
+                if q.get('quoteType') in ['EQUITY', 'ETF', 'MUTUALFUND']:
+                    ticker = q.get('symbol')
+                    name = q.get('shortname') or q.get('longname') or ticker
+                    exchange = q.get('exchDisp', '')
+                    if ticker:
+                        results.append({
+                            "ticker": ticker,
+                            "name": name,
+                            "exchange": exchange
+                        })
+            return results
+
+        return await asyncio.to_thread(_fetch)
     except Exception as e:
         print(f"Error searching stock {query}: {e}")
         return []
