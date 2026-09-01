@@ -45,24 +45,21 @@ async def _generate(client, system_instruction: str, user_msg: str, schema) -> s
     raise last_err  # All models failed
 
 class DailyUpdateResponse(BaseModel):
-    market_analysis: str = Field(description="2-3 sentences explaining today's movement simply and honestly")
-    event_reasoning: str = Field(description="Clear explanation of the global or local events causing this change")
-    hype_check: str = Field(description="Reality check on whether the current price is driven by fundamentals or hype")
-    performance_context: str = Field(description="How this fits into the bigger picture")
-    investor_perspective: str = Field(description="What a long-term investor should actually focus on right now")
-    action_items: str = Field(description="Specific, practical thoughts")
-    key_takeaway: str = Field(description="One honest, grounding principle to remember")
+    market_analysis: str = Field(description="4-5 sentences explaining today's movement simply and honestly")
+    event_reasoning: str = Field(description="Clear explanation of the global or local events causing this change (growth, loss, or stagnation) to educate the user")
+    hype_check: str = Field(description="Reality check on whether the current price is driven by solid business fundamentals or just hype")
+    performance_context: str = Field(description="Performance expectations compared to the broader market in bigger picture context")
+    investor_perspective: str = Field(description="How different investor classes are likely reacting — covering Retail, Institutional, Accredited, High-Net-Worth, Ultra-High-Net-Worth, Angel, Venture Capital, Private Equity, Hedge Funds, Mutual Funds, Pension Funds, Endowments, Sovereign Wealth Funds, Family Offices, Day Traders, Swing Traders, Value Investors, Growth Investors, Income Investors, Passive Investors, Active Investors, and Quantitative Traders")
 
 class DisasterAlertResponse(BaseModel):
-    situation_assessment: str
+    situation_assessment: str = Field(description="Direct, honest assessment of the condition of the market and the user's portfolio")
     severity_rating: str = Field(description="NORMAL_DIP, MAJOR_DROP, or CRASH")
-    event_reasoning: str
-    hype_check: str
-    historical_precedent: str
-    worst_case_scenario: str
-    decision_framework: str
-    action_guidance: str
-    educational_guidance: str = Field(description="Educate the user on what qualities make a company historically stable, without suggesting specific tickers")
+    event_reasoning: str = Field(description="Simple explanation of the global/local events that caused this drop")
+    hype_check: str = Field(description="Honest assessment if the stock was hype-inflated and is now correcting to reality")
+    historical_precedent: str = Field(description="Quick examples of when this happened before and how it played out")
+    worst_case_scenario: str = Field(description="The honest truth about what could happen next")
+    decision_framework: str = Field(description="Considerations and facts for the user to think about before making any decisions")
+    educational_guidance: str = Field(description="Educate the user on what fundamental qualities make a company historically stable during drops like this, without suggesting specific tickers")
 
 class PortfolioReportResponse(BaseModel):
     executive_summary: str
@@ -83,7 +80,6 @@ class MarketEducationResponse(BaseModel):
     intro: str = Field(description="1 friendly opening sentence for the Education Corner section")
     top_stocks: list[MarketEducationItem] = Field(description="Top 3 performing stocks today with educational reasoning")
     top_mfs: list[MarketEducationItem] = Field(description="Top 3 performing mutual funds today with educational reasoning")
-    closing_lesson: str = Field(description="One grounding educational lesson the user can learn from today's top performers")
 
 DISCLAIMER = "\n\n---\n*⚠️ Caution: My analysis is for your learning and perspective only. Please do not use this as direct financial advice for making trading decisions.*"
 
@@ -98,11 +94,10 @@ async def generate_market_education(top_performers: dict) -> str:
         user_msg = (
             f"Today's top performing stocks:\n{stocks_text}\n\n"
             f"Today's top performing mutual funds:\n{mfs_text}\n\n"
-            "For each of these, explain in simple 10th-grade language WHY they performed well today. "
+            "Explanation in simple language about why the growth occured. "
             "Link it to real events, sector trends, or business fundamentals. "
             "This is purely educational — do NOT suggest buying any of these. "
-            "Close with one broad investment lesson the user can take away from today's market."
-        )
+            "Keep the language at a 10th-grade reading level. Be concise.")
         sys_instruction = (
             "You are a PhD economist and trusted close friend explaining today's market winners purely for education. "
             "Never recommend buying. Speak in simple 10th-grade language. Be concise. Link performance to real events."
@@ -117,7 +112,6 @@ async def generate_market_education(top_performers: dict) -> str:
         formatted += "\n**🏆 Top Mutual Funds Today:**\n"
         for item in data.get("top_mfs", []):
             formatted += f"- **{item.get('name')}** ({item.get('change_pct')}): {item.get('reason')}\n"
-        formatted += f"\n**💡 Today's Lesson:** {data.get('closing_lesson')}"
         formatted += "\n\n*⚠️ This section is purely educational. None of the above are recommendations to buy.*"
         return formatted
     except Exception as e:
@@ -141,11 +135,27 @@ async def analyze_asset(asset_data: dict) -> str:
         
         if is_alert:
             prompt_config = SYSTEM_PROMPTS.get("disaster_alert_prompt", {})
-            user_msg = f"URGENT: {name} has dropped {change_pct}% today. Explain the global or local events causing this drop. Assess if this is a hype bubble bursting. Educate the user on fundamental qualities of stable assets during a crash. Keep the investor calm but be honest."
+            user_msg = (
+                f"URGENT: {name} has dropped {change_pct}% today. "
+                "Explain the specific global or local events causing this drop. "
+                "Assess honestly whether this is a hype bubble bursting. "
+                "Provide the severity, historical context, worst-case scenario, and considerations for the user. "
+                "Educate the user on fundamental qualities of stable assets during a crash. "
+                "Keep the investor calm but be completely honest. Do not suggest specific tickers."
+            )
             schema = DisasterAlertResponse
         else:
             prompt_config = SYSTEM_PROMPTS.get("daily_update_prompt", {})
-            user_msg = f"Analyze the performance of {name} ({asset_type}). Current: {current_price}, Previous: {previous_price}, Change: {change_pct}%. Connect this performance to specific global/local events. Warn if the stock is hype-driven, and provide pure educational guidance."
+            user_msg = (
+                f"Analyze the performance of {name} ({asset_type}). "
+                f"Current price: {current_price}, Previous close: {previous_price}, Change: {change_pct}%. "
+                "Explain in 4-5 sentences what happened today. "
+                "Connect this performance to specific global/local events to educate the user. "
+                "Assess whether this is hype-driven or fundamentals-driven. "
+                "Describe how each class of investor — from retail and day traders to hedge funds, "
+                "pension funds, sovereign wealth funds, and quantitative traders — is likely reacting to this move. "
+                "Keep language at a 10th-grade level. Do not suggest buying or selling."
+            )
             schema = DailyUpdateResponse
             
         sys_instruction = f"SYSTEM INSTRUCTIONS:\n{json.dumps(prompt_config, indent=2)}\n{json.dumps(SYSTEM_PROMPTS.get('key_principles', {}))}"
@@ -157,14 +167,14 @@ async def analyze_asset(asset_data: dict) -> str:
             formatted = f"**Severity:** {data.get('severity_rating')}\n\n{data.get('situation_assessment')}\n\n"
             formatted += f"**What Happened:** {data.get('event_reasoning')}\n\n**Hype Check:** {data.get('hype_check')}\n\n"
             formatted += f"**Historical Precedent:** {data.get('historical_precedent')}\n\n**Worst Case:** {data.get('worst_case_scenario')}\n\n"
-            formatted += f"**Next Steps:** {data.get('decision_framework')} {data.get('action_guidance')}\n\n"
+            formatted += f"**Before You Decide:** {data.get('decision_framework')}\n\n"
             if data.get('educational_guidance'):
                 formatted += f"**Educational Guidance:** {data.get('educational_guidance')}"
         else:
             formatted = f"{data.get('market_analysis')}\n\n**The 'Why' (Events):** {data.get('event_reasoning')}\n\n"
             formatted += f"**Hype Check:** {data.get('hype_check')}\n\n"
-            formatted += f"**Big Picture:** {data.get('performance_context')} {data.get('investor_perspective')}\n\n"
-            formatted += f"**Takeaway:** {data.get('key_takeaway')}\n\n**Action Items:** {data.get('action_items')}"
+            formatted += f"**Big Picture:** {data.get('performance_context')}\n\n"
+            formatted += f"**How Investors Are Reacting:** {data.get('investor_perspective')}"
 
         return formatted + DISCLAIMER
     except Exception as e:
