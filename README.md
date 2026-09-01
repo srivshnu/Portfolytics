@@ -1,47 +1,52 @@
-# Portfolytics
+# 📈 Portfolytics
 
-**Portfolytics: AI-Powered Behavioral Portfolio Management**
+**Portfolytics: AI-Powered Behavioral Portfolio Education & Management**
 
 Portfolytics is a full-stack web application designed for savings-oriented retail investors who experience stock market anxiety. Built with **FastAPI, MongoDB, and Jinja2**, the platform allows users to track domestic and international stocks alongside mutual funds with real-time financial data.
 
-What sets Portfolytics apart is its deep integration with **Google's Gemini AI** (with automatic model fallback: 3.7 → 3.5 → 3.1-lite). The AI operates under a carefully engineered persona — a **PhD Economist and trusted close friend** — constrained by JSON-structured system instructions fed via the **Native System Instruction** parameter and enforced through **Pydantic Structured Outputs**. It provides:
+What sets Portfolytics apart is its deep integration with **Google's Gemini AI** (with automatic model fallback: `3.7 → 3.5 → 3.1-lite`). The AI operates under a carefully engineered persona — a **PhD Economist and trusted close friend** — constrained by JSON-structured system instructions fed via the **Native System Instruction** parameter and enforced through **Pydantic Structured Outputs**.
+
+### 🌟 Key Value Pillars
 - **Event-Based Reasoning**: Links every price movement (growth, loss, or stagnation) to specific global or local events to educate the user on *why* things are changing.
 - **Hype Protection**: Actively warns users away from stocks trading on social media hype rather than business fundamentals (e.g., meme stocks, news-driven bubbles).
-- **Alternative Suggestions**: Recommends historically stable alternatives in a similar price bracket when an asset underperforms.
+- **Strictly Educational Framework**: Stripped entirely of standard robotic "LLM suggestions." The AI is engineered to provide objective, jargon-free education and diversification analysis without offering unsolicited financial advice or behavioral coaching.
 - **Disaster Alerts**: Automatically triggers calm, honest crisis communication during steep drops, using historical precedents to prevent panic selling.
-- **Behavioral Coaching**: Highlights psychological traps and reinforces long-term wealth creation principles with 10th-grade accessible language and zero sugar-coating.
-- **Scheduled Email Reports**: Delivers personalized, AI-generated portfolio reviews directly to the user's inbox via Gmail SMTP.
+- **Scheduled Email Reports**: Delivers personalized, beautifully formatted, AI-generated portfolio reviews directly to the user's inbox via Gmail SMTP.
 
-## Key Features
+---
 
-- **Track Stocks & Mutual Funds** — Add tickers via Yahoo Finance and MF scheme codes via mfapi.in
-- **"Did You Mean?" Smart Search** — Fuzzy search for both stocks and mutual funds with suggestion tables
-- **AI Analysis with Structured Outputs** — Gemini returns strict JSON (via Pydantic schemas), then assembled into conversational Markdown for display. **STRICTLY FOR EDUCATION PURPOSES. DO NOT USE IT AS A RECOMMENDATION FOR REAL-TIME TRADES.**
-- **Native System Instructions** — AI persona rules sit at a higher privilege layer in the model's attention mechanism, ensuring consistent tone and format
-- **Automatic Model Fallback** — If the primary Gemini model is overloaded (503/429), the app silently falls back through a priority chain
-- **Timezone-Aware Scheduling** — Users select their timezone from 597 options; APScheduler triggers reports in the correct local time
-- **Scheduled Reports** — Choose daily/weekly frequency and delivery time
-- **Disaster Alerts** — Immediate email when assets drop beyond configurable thresholds
-- **Premium Email Templates** — HTML emails styled with the Indian ₹500 note palette (cream, sage green, warm brown) with proper Markdown rendering
-- **Secure Auth** — bcrypt-hashed passwords, signed session cookies via itsdangerous
-- **MongoDB Atlas with Local Fallback** — Tries cloud database first, gracefully falls back to localhost if Atlas is unreachable
+## 🚀 Core Features
 
+- **Track Stocks & Mutual Funds** — Add tickers via Yahoo Finance and MF scheme codes via `mfapi.in`.
+- **Bulletproof Data Fetching** — Bypasses traditional `yfinance` rate limits and IP blocks by utilizing raw HTTP requests to Yahoo's unauthenticated `query1` endpoints, wrapped in a 10-minute caching layer to ensure lightning-fast loading.
+- **"Did You Mean?" Smart Search** — Fuzzy search for both stocks and mutual funds with intuitive suggestion tables.
+- **AI Analysis with Structured Outputs** — Gemini returns strict JSON (via Pydantic schemas), which is then assembled into conversational Markdown. *(Strictly for educational purposes. Not financial advice).*
+- **Native System Instructions** — AI persona rules sit at a higher privilege layer in the model's attention mechanism, ensuring absolute consistency in tone and format.
+- **Automatic Model Fallback** — If the primary Gemini model is overloaded (`503`/`429`), the app silently falls back through a priority chain to guarantee uptime.
+- **Timezone-Aware Scheduling** — Users select their timezone from 597 options; `APScheduler` triggers reports in the correct local time.
+- **Scheduled Reports & Alerts** — Choose daily or weekly frequency and delivery time. Immediate email alerts trigger when assets drop beyond configurable thresholds.
+- **Premium Email Templates** — HTML emails styled with an elegant, calming color palette (cream, sage green, warm brown) with robust Markdown rendering (`nl2br`, `sane_lists`).
+- **Secure Auth & Fallback DB** — bcrypt-hashed passwords, signed session cookies via `itsdangerous`, and MongoDB Atlas cloud deployment with automatic fallback to `localhost`.
 
-## Tech Stack
+---
+
+## 💻 Tech Stack
 
 - **Backend:** FastAPI + Uvicorn
 - **Database:** MongoDB Atlas (motor async driver) with local fallback
-- **Frontend:** Server-side rendered Jinja2 templates + vanilla CSS (zero JavaScript)
-- **AI Engine:** Google Gemini (3.7-flash / 3.5-flash / 3.1-flash-lite) with Native System Instructions & Pydantic Structured Outputs
+- **Frontend:** Server-side rendered Jinja2 templates + vanilla CSS (zero JavaScript required)
+- **AI Engine:** Google Gemini (`3.7-flash` / `3.5-flash` / `3.1-flash-lite`) with Native System Instructions & Pydantic Structured Outputs
 - **Prompt Engineering:** JSON-formatted prompts for token efficiency, hierarchical attention, and context caching
-- **Email:** Gmail SMTP with Markdown-to-HTML rendering
-- **Scheduler:** APScheduler with per-user timezone support (pytz)
+- **Email:** Gmail SMTP with dynamic Markdown-to-HTML compilation
+- **Scheduler:** APScheduler with per-user timezone support (`pytz`)
 
-## AI Architecture
+---
 
-```
+## 🧠 AI Architecture
+
+```text
 ┌─────────────────────────────┐
-│   prompts.json (v1.2)       │  ← Static persona, rules, output format
+│   prompts.json (v1.2)       │  ← Static persona, rules, objective educational format
 │   JSON-structured prompts   │    (cached by the model — lower cost)
 └─────────┬───────────────────┘
           │ Injected via native
@@ -55,22 +60,24 @@ What sets Portfolytics apart is its deep integration with **Google's Gemini AI**
           ▼
 ┌─────────────────────────────┐
 │   gemini_service.py         │  ← Parses JSON → assembles into
-│   Markdown formatter        │    conversational Markdown for display
+│   Markdown formatter        │    conversational, perfectly spaced Markdown
 └─────────────────────────────┘
 ```
 
-## Setup
+---
 
-### 1. Install MongoDB Community Edition
-Make sure `mongod` is running on `localhost:27017`, or configure MongoDB Atlas.
+## ⚙️ Setup & Installation
+
+### 1. Database Setup
+Install **MongoDB Community Edition** and run `mongod` on `localhost:27017`, or configure a **MongoDB Atlas** cluster.
 
 ### 2. Get a Gemini API Key
 Visit [Google AI Studio](https://aistudio.google.com/apikey) and create a free API key.
 
 ### 3. Create Gmail App Password
-1. Enable 2-Factor Authentication on your Google account
-2. Go to [App Passwords](https://myaccount.google.com/apppasswords)
-3. Generate a new app password for "Mail"
+1. Enable 2-Factor Authentication on your Google account.
+2. Go to [App Passwords](https://myaccount.google.com/apppasswords).
+3. Generate a new app password for "Mail".
 
 ### 4. Configure Environment
 Create a `.env` file in the project root:
@@ -89,15 +96,17 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-### 6. Run
+### 6. Run the Application
 ```bash
 python main.py
 ```
-Open http://localhost:8000 in your browser.
+*Access the platform at `http://localhost:8000` in your browser.*
 
-## Project Structure
+---
 
-```
+## 📁 Project Structure
+
+```text
 Portfolytics/
 ├── main.py                  # FastAPI app entry point
 ├── config.py                # Pydantic Settings from .env
@@ -110,12 +119,12 @@ Portfolytics/
 │   └── settings_routes.py   # Schedule & alert configuration
 ├── services/
 │   ├── gemini_service.py    # AI integration (Structured Outputs + model fallback)
-│   ├── prompts.json         # JSON-structured AI persona & prompt framework (v1.2)
-│   ├── stock_service.py     # Yahoo Finance integration
+│   ├── prompts.json         # JSON-structured AI persona & prompt framework
+│   ├── stock_service.py     # Custom query1 raw HTTP integration
 │   ├── mf_service.py        # mfapi.in integration
-│   ├── mail_service.py      # Gmail SMTP with HTML templates
+│   ├── mail_service.py      # Gmail SMTP with HTML templates & markdown parsing
 │   └── scheduler_service.py # APScheduler (timezone-aware cron/interval jobs)
 ├── templates/               # Jinja2 HTML templates
-├── static/css/              # Stylesheets (Indian ₹500 note palette)
+├── static/css/              # Stylesheets (Indian ₹500 note calming palette)
 └── requirements.txt         # Python dependencies
 ```
