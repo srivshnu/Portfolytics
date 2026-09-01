@@ -62,7 +62,7 @@ class DisasterAlertResponse(BaseModel):
     worst_case_scenario: str
     decision_framework: str
     action_guidance: str
-    alternative_suggestions: list[str] = Field(description="Suggest 1-2 historically stable alternative stocks/ETFs in a similar price bracket")
+    educational_guidance: str = Field(description="Educate the user on what qualities make a company historically stable, without suggesting specific tickers")
 
 class PortfolioReportResponse(BaseModel):
     executive_summary: str
@@ -71,7 +71,7 @@ class PortfolioReportResponse(BaseModel):
     hype_warning: str = Field(description="Call out any assets that seem driven purely by hype rather than fundamentals.")
     diversification_check: str
     strategic_thoughts: str
-    alternative_suggestions: list[str]
+    diversification_education: str = Field(description="Discuss historically stable asset classes to offset weaknesses, without suggesting specific tickers")
     behavioral_coaching: str
 
 DISCLAIMER = "\n\n---\n*⚠️ Caution: My analysis is for your learning and perspective only. Please do not use this as direct financial advice for making trading decisions.*"
@@ -92,11 +92,11 @@ async def analyze_asset(asset_data: dict) -> str:
         
         if is_alert:
             prompt_config = SYSTEM_PROMPTS.get("disaster_alert_prompt", {})
-            user_msg = f"URGENT: {name} has dropped {change_pct}% today. Explain the global or local events causing this drop. Assess if this is a hype bubble bursting. Suggest safer alternatives in a similar price bracket. Keep the investor calm but be honest."
+            user_msg = f"URGENT: {name} has dropped {change_pct}% today. Explain the global or local events causing this drop. Assess if this is a hype bubble bursting. Educate the user on fundamental qualities of stable assets during a crash. Keep the investor calm but be honest."
             schema = DisasterAlertResponse
         else:
             prompt_config = SYSTEM_PROMPTS.get("daily_update_prompt", {})
-            user_msg = f"Analyze the performance of {name} ({asset_type}). Current: {current_price}, Previous: {previous_price}, Change: {change_pct}%. Connect this performance to specific global/local events. Warn if the stock is hype-driven, and suggest alternative solid investments in a similar price range."
+            user_msg = f"Analyze the performance of {name} ({asset_type}). Current: {current_price}, Previous: {previous_price}, Change: {change_pct}%. Connect this performance to specific global/local events. Warn if the stock is hype-driven, and provide pure educational guidance."
             schema = DailyUpdateResponse
             
         sys_instruction = f"SYSTEM INSTRUCTIONS:\n{json.dumps(prompt_config, indent=2)}\n{json.dumps(SYSTEM_PROMPTS.get('key_principles', {}))}"
@@ -109,8 +109,8 @@ async def analyze_asset(asset_data: dict) -> str:
             formatted += f"**What Happened:** {data.get('event_reasoning')}\n\n**Hype Check:** {data.get('hype_check')}\n\n"
             formatted += f"**Historical Precedent:** {data.get('historical_precedent')}\n\n**Worst Case:** {data.get('worst_case_scenario')}\n\n"
             formatted += f"**Next Steps:** {data.get('decision_framework')} {data.get('action_guidance')}\n\n"
-            if data.get('alternative_suggestions'):
-                formatted += f"**Alternatives to Consider:**\n" + "\n".join([f"- {a}" for a in data.get('alternative_suggestions', [])])
+            if data.get('educational_guidance'):
+                formatted += f"**Educational Guidance:** {data.get('educational_guidance')}"
         else:
             formatted = f"{data.get('market_analysis')}\n\n**The 'Why' (Events):** {data.get('event_reasoning')}\n\n"
             formatted += f"**Hype Check:** {data.get('hype_check')}\n\n"
@@ -133,7 +133,7 @@ async def generate_portfolio_report(assets: list) -> str:
             formatted_assets += f"- {a.get('name')} ({a.get('asset_type')}): {a.get('current_price')} (Change: {a.get('change_pct')}%)\n"
             
         prompt_config = SYSTEM_PROMPTS.get("portfolio_report_prompt", {})
-        user_msg = f"Here is a portfolio summary:\n{formatted_assets}\nAssess the portfolio health. Highlight how recent global/local events impacted the winners and losers. Warn against any hype-inflated assets held, and suggest historically stable alternatives matching the portfolio's value level."
+        user_msg = f"Here is a portfolio summary:\n{formatted_assets}\nAssess the portfolio health. Highlight how recent global/local events impacted the winners and losers. Warn against any hype-inflated assets held, and educate the user on diversification principles."
         
         sys_instruction = f"SYSTEM INSTRUCTIONS:\n{json.dumps(prompt_config, indent=2)}\n{json.dumps(SYSTEM_PROMPTS.get('key_principles', {}))}"
 
@@ -146,8 +146,8 @@ async def generate_portfolio_report(assets: list) -> str:
         formatted += f"### Hype Warning ⚠️\n{data.get('hype_warning')}\n\n"
         formatted += f"### Diversification & Strategy\n{data.get('diversification_check')} {data.get('strategic_thoughts')}\n\n"
         
-        if data.get('alternative_suggestions'):
-            formatted += f"### Stable Alternatives\n" + "\n".join([f"- {a}" for a in data.get('alternative_suggestions', [])]) + "\n\n"
+        if data.get('diversification_education'):
+            formatted += f"### Education: Building Stability\n{data.get('diversification_education')}\n\n"
             
         formatted += f"**Final Thought:** {data.get('behavioral_coaching')}"
 

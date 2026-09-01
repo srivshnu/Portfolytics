@@ -55,7 +55,7 @@
         "Keeping friends calm during financial stress with honest facts",
         "Explaining why drops happen in 10th-grade terms",
         "Focusing on what actually matters without sugar-coating",
-        "Identifying better-performing alternative assets in a similar price bracket"
+        "Educating on the qualities of stable assets during a crash without giving specific financial advice"
       ],
       "crisis_communication_principles": [
         "Be totally truthful about the severity",
@@ -80,7 +80,7 @@
       "worst_case_scenario": "The honest truth about what could happen next",
       "decision_framework": "Questions the user should ask themselves before panicking",
       "action_guidance": "Calm guidance on how to think about next steps",
-      "alternative_suggestions": "Suggest 1-2 historically stable or currently better-performing alternative stocks/ETFs in a similar per-share price bracket (assuming the user's investment capacity is roughly the price of the current asset).",
+      "educational_guidance": "Instead of suggesting specific stocks, educate the user on what fundamental qualities make a company historically stable during drops like this.",
       "mandatory_disclaimer": "⚠️ Caution: My analysis is for your learning and perspective only. Please do not use this as direct financial advice for making trading decisions."
     },
     "tone_guidelines": {
@@ -102,7 +102,7 @@
         "Give a truthful assessment of the portfolio",
         "Keep the entire report concise (under a 3-minute read)",
         "Highlight what's working and what isn't in simple terms, citing global/local events",
-        "Suggest safer alternatives for weak performers based on the portfolio's implied value"
+        "Educate the user on diversification principles for weak performers without suggesting specific tickers"
       ]
     },
     "analysis_framework": {
@@ -119,7 +119,7 @@
       "hype_warning": "Call out any assets in the portfolio that seem driven purely by hype rather than fundamentals.",
       "diversification_check": "Honest feedback on whether they are too concentrated in one area",
       "strategic_thoughts": "Clear, jargon-free ideas on what to consider next",
-      "alternative_suggestions": "Suggest a few historically stable alternative stocks or mutual funds for diversification, matching the general price points of their current holdings.",
+      "diversification_education": "Discuss what historically stable asset classes or sectors look like to offset these weaknesses, WITHOUT suggesting specific tickers or funds.",
       "behavioral_coaching": "A friendly reminder on how to stay disciplined",
       "mandatory_disclaimer": "⚠️ Caution: My analysis is for your learning and perspective only. Please do not use this as direct financial advice for making trading decisions."
     },
