@@ -11,7 +11,7 @@ What sets Portfolytics apart is its deep integration with **Google's Gemini AI**
 - **Hype Protection**: Actively warns users away from stocks trading on social media hype rather than business fundamentals (e.g., meme stocks, news-driven bubbles).
 - **Strictly Educational Framework**: Stripped entirely of standard robotic "LLM suggestions." The AI is engineered to provide objective, jargon-free education and diversification analysis without offering unsolicited financial advice or behavioral coaching.
 - **Disaster Alerts**: Automatically triggers calm, honest crisis communication during steep drops, using historical precedents to prevent panic selling.
-- **Scheduled Email Reports**: Delivers personalized, beautifully formatted, AI-generated portfolio reviews directly to the user's inbox via Gmail SMTP.
+- **Scheduled Email Reports**: Delivers personalized, beautifully formatted, AI-generated portfolio reviews directly to the user's inbox via the **Resend API** with automated **SMTP** fallbacks.
 
 ---
 
@@ -37,7 +37,7 @@ What sets Portfolytics apart is its deep integration with **Google's Gemini AI**
 - **Frontend:** Server-side rendered Jinja2 templates + vanilla CSS (zero JavaScript required)
 - **AI Engine:** Google Gemini (`3.7-flash` / `3.5-flash` / `3.1-flash-lite`) with Native System Instructions & Pydantic Structured Outputs
 - **Prompt Engineering:** JSON-formatted prompts for token efficiency, hierarchical attention, and context caching
-- **Email:** Gmail SMTP with dynamic Markdown-to-HTML compilation
+- **Email:** Resend API & standard SMTP with dynamic Markdown-to-HTML compilation
 - **Scheduler:** APScheduler with per-user timezone support (`pytz`)
 
 ---
@@ -74,18 +74,22 @@ Install **MongoDB Community Edition** and run `mongod` on `localhost:27017`, or 
 ### 2. Get a Gemini API Key
 Visit [Google AI Studio](https://aistudio.google.com/apikey) and create a free API key.
 
-### 3. Create Gmail App Password
-1. Enable 2-Factor Authentication on your Google account.
-2. Go to [App Passwords](https://myaccount.google.com/apppasswords).
-3. Generate a new app password for "Mail".
+### 3. Configure Email Credentials
+You can use the Resend API (recommended) or a standard SMTP relay (like Gmail App Passwords).
+- **Resend**: Get an API key from [Resend](https://resend.com)
+- **Gmail SMTP**: Go to [App Passwords](https://myaccount.google.com/apppasswords) and generate a 16-character password for "Mail".
 
 ### 4. Configure Environment
 Create a `.env` file in the project root:
 ```env
 MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/?retryWrites=true&w=majority
 GEMINI_API_KEY=your_gemini_api_key
+
+# Email Configuration (Use Resend or SMTP)
+RESEND_API_KEY=re_your_resend_api_key
 SMTP_EMAIL=your_email@gmail.com
 SMTP_PASSWORD=your_16_char_app_password
+
 SECRET_KEY=any_long_random_string
 ```
 
@@ -122,7 +126,7 @@ Portfolytics/
 │   ├── prompts.json         # JSON-structured AI persona & prompt framework
 │   ├── stock_service.py     # Custom query1 raw HTTP integration
 │   ├── mf_service.py        # mfapi.in integration
-│   ├── mail_service.py      # Gmail SMTP with HTML templates & markdown parsing
+│   ├── mail_service.py      # Resend API / SMTP email delivery & HTML templates
 │   └── scheduler_service.py # APScheduler (timezone-aware cron/interval jobs)
 ├── templates/               # Jinja2 HTML templates
 ├── static/css/              # Stylesheets (Indian ₹500 note calming palette)
