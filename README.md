@@ -1,6 +1,6 @@
 # 📈 Portfolytics
 
-**Portfolytics: AI-Powered Behavioral Portfolio Education & Management**
+**Portfolytics: AI-Powered Portfolio Education & Alerting Engine**
 
 Portfolytics is a full-stack web application designed for savings-oriented retail investors who experience stock market anxiety. Built with **FastAPI, MongoDB, and Jinja2**, the platform allows users to track domestic and international stocks alongside mutual funds with real-time financial data.
 
